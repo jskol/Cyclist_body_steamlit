@@ -18,6 +18,8 @@ class Human2D:
     torso_len: float =None
     u_leg_len: float =None
     l_leg_len: float =None
+    foot_len:float=None
+    foot_angle:float=None
     bike: Bike=field(default_factory=Bike)
     # For animation
     lines:dict[str,list[Line2D]]=field(default_factory= dict)
