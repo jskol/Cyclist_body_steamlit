@@ -22,14 +22,22 @@ class Bike:
     stem_len:float=110
     side:str='L' # optionally can be right 'R'
 
+     #helper-function for flipping the picture
+    def side_to_sign(self)->float:
+        if self.side=='L':
+            return -1.
+        elif self.side=='R':
+            return 1.
+        else:
+            raise ValueError(".side can ONLY be 'L' or 'R' ")
+
+
     def calc_bb_loc(self,saddle_loc:NDArray=np.array([0,0]))->NDArray:
         '''
         Helper function for calulating bb location realive 
         to the position of the seat
         '''
-        sign=-1
-        if self.side =='R':
-            sign=1
+        sign=self.side_to_sign()
 
         bb_loc=np.array([
             saddle_loc[0]+sign*self.saddle_height*np.cos(self.seat_tube_angle*np.pi/180),
@@ -44,10 +52,7 @@ class Bike:
         w/o the spacers (end of the top bearing of the headset)
         realive to the position of the seat
         '''
-        sign=-1
-        if self.side =='R':
-            sign=1
-
+        sign=self.side_to_sign()
         bb_loc=self.calc_bb_loc(saddle_loc)
         wheel_y=bb_loc[1]+self.bb_drop
         wheel_x=bb_loc[0]-sign*(60+0.5*self.wheel_diameter)
@@ -69,9 +74,7 @@ class Bike:
         *) 'hoods_loc' -(x,y) location of the hoods
         '''
         
-        sign=-1
-        if self.side =='R':
-            sign=1
+        sign=self.side_to_sign()
         res={}
 
         res['seat_loc']=seat_loc
@@ -89,9 +92,7 @@ class Bike:
     def plot_bike(self,ax,saddle_loc:NDArray=np.array([0,0])):
         
         common={'color':'k','linewidth': 3,}
-        sign=-1
-        if self.side =='R':
-            sign=1
+        sign=self.side_to_sign()
         POC_dict=self.get_points_of_contact(saddle_loc) #Calculate location of POC
         bb_loc=POC_dict['bb_loc']
 
