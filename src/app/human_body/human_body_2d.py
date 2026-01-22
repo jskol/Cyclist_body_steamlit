@@ -20,10 +20,17 @@ class Human2D:
     shoulder:NDArray =None
     #fixed lengts
     arm_len: float =None
+    
+    # for future improvements #
+    u_arm_len:float=None
+    l_arm_len:float=None
+    arm_bend:float=None
+    elbow:NDArray=None
+    ###########################
+
     torso_len: float =None
     u_leg_len: float =None
     l_leg_len: float =None
-    
     foot_len:float=None
     foot_angle:float=None
     cleat_set_back:float=0
@@ -57,6 +64,11 @@ class Human2D:
 
     # Update adjustable joints
     def update_knee(self):
+        '''
+        update_knee recalulates the position
+        of the knee as a result of ankle and
+        hip position
+        '''
         diff= self.ankle-self.hip # distance between them
         len_diff=np.linalg.norm(diff)
 
@@ -86,6 +98,11 @@ class Human2D:
             ])   
 
     def update_shoulder(self):
+        '''
+        update_shoulder recalculates the postion of the 
+        shoulder whihch is determined by the location
+        of hips and wrists in space
+        '''
         diff= self.wrist-self.hip # distance between them
         len_diff=np.linalg.norm(diff)
 
@@ -113,9 +130,12 @@ class Human2D:
                 self.hip[1] + self.torso_len* np.sin(angle)
             ]) 
 
-    #For animations 
+    #For animations
+    # Initialize the plots 
     def setup_plot(self, ax,col:str='k'):
-
+        '''
+        Initialize the plotting objects
+        '''
         self.bike.plot_bike(ax,self.hip)
         common_style = {'marker': 'o', 'linewidth': 3, 'markersize': 6,'color':col}
         self.lines['crank']     = ax.plot([], [], color='k',linewidth=3)[0]
@@ -124,12 +144,14 @@ class Human2D:
         self.lines['lower_leg'] = ax.plot([], [], **common_style)[0]
         self.lines['torso']     = ax.plot([], [], **common_style)[0]
         self.lines['arm']       = ax.plot([], [], **common_style)[0]
-
-
         return self.lines.values()
     
-
+    #
     def start_pedaling(self,frame)->None:
+        '''
+        Helper function intoruding dynamics->pedalling
+        as a function of frame=time
+        '''
         t = frame / 1.0
         crank_len=self.bike.crank_len
         bb_loc=self.bike.calc_bb_loc(self.hip)
@@ -143,12 +165,14 @@ class Human2D:
 
      
     def animation_step(self, frame):
+        '''
+        Plots the current frame
+        '''
         #Start the movement
         self.start_pedaling(frame)
         
-        # Update positions of "sticks"
+        # Update positions of "sticks" in the animation
         bb_loc=self.bike.calc_bb_loc()
-        #self.lines['crank'].set_data([self.foot[0],bb_loc[0]],[self.foot[1],bb_loc[1]])
         # Crak has to go from bb to pedal spindle and not the foot so
         # The cleat set-back has to be included
         direction=self.bike.side_to_sign()
