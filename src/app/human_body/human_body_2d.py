@@ -103,14 +103,14 @@ class Human2D:
         shoulder whihch is determined by the location
         of hips and wrists in space
         '''
-        diff= self.wrist-self.hip # distance between them
+        diff= self.elbo-self.hip # distance between them
         len_diff=np.linalg.norm(diff)
 
         #if we max out then return leg fully straighten
         #from hip towards the angkle
 
         if len_diff > (self.arm_len+self.torso_len):
-            self.knee= self.hip +(diff/len_diff)*self.torso_len 
+            self.shoulder= self.hip +(diff/len_diff)*self.torso_len 
         else:
             #use cosine theorem to deal with knee angles
             cos_alpha = (self.torso_len**2 + len_diff**2 - self.arm_len**2) / (2 * self.torso_len*len_diff )
