@@ -37,7 +37,7 @@ def animation_refresh(cyclist:Human2D)->None:
 
 def animation_native(cyclist:Human2D,current_time:float=0)->None:
     #plot a bike
-    bike_x,bike_y=cyclist.bike.plot_bike_plotly(cyclist.hip)
+    bike_x,bike_y=cyclist.bike.plot_bike_plotly(np.array([0.,0.]))
     bike=[
         go.Scatter(x=bike_x,y=bike_y,mode="lines",line=dict(color='black'))
     ]

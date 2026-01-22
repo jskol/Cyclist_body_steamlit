@@ -23,12 +23,13 @@ with st.sidebar :
     #foot setup
     foot_size=st.select_slider(f'Set your foot lenght',options=[200+x for x in np.arange(0,200,5)],value=300)
     st.write(f'Foot lenght set to {foot_size}')
-
     foot_ang=st.select_slider(f'Set your angle',options=[x for x in np.arange(-30,45,5)],value=15)
     st.write(f'Foot angle set to {foot_ang}')
     cleat_SB=st.select_slider(f'Set your cleat setback',options=[x for x in np.arange(0,foot_size,foot_size/30)],value=foot_size/3)
     st.write(f'Cleat setback set to {foot_size}')
 
+    #hip
+    move_hips=st.select_slider(f'saddle set_back',options=[x for x in np.arange(-150,150,5)],value=0)
 
 
     st.title('Bike geometry')
@@ -57,13 +58,10 @@ cyclist=Human2D(
     cleat_set_back=cleat_SB
     )
 
-
-
-
 #Sets the Frame of reference
-cyclist.update_hip(np.array([0,0]))
-POC_dict=bike.get_points_of_contact(cyclist.hip)
-
+cyclist.update_hip(np.array([move_hips,0]))
+POC_dict=bike.get_points_of_contact(np.zeros(2)) #fix the seat a (0.,0.) #cyclist.hip)
+st.text(f'bb location is {POC_dict['bb_loc']} ')
 # sets the initial positions
 foot_on_the_pedal=POC_dict['bb_loc']
 foot_on_the_pedal[1]-=bike.crank_len

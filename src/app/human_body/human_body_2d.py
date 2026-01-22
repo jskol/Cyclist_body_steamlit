@@ -133,14 +133,14 @@ class Human2D:
             ]) 
 
     #For animations
-    def start_pedaling(self,frame)->None:
+    def start_pedaling(self,frame,saddle_loc:NDArray=np.zeros(2))->None:
         '''
         Helper function intoruding dynamics->pedalling
         as a function of frame=time
         '''
         t = frame / 1.0
         crank_len=self.bike.crank_len
-        bb_loc=self.bike.calc_bb_loc(self.hip)
+        bb_loc=self.bike.calc_bb_loc(saddle_loc)
         direction=self.bike.side_to_sign()
         self.update_foot(np.array([
             bb_loc[0] - direction*crank_len * np.cos(t),
@@ -154,7 +154,7 @@ class Human2D:
         '''
         Initialize the plotting objects
         '''
-        self.bike.plot_bike(ax,self.hip)
+        self.bike.plot_bike(ax,np.zeros(2))
         common_style = {'marker': 'o', 'linewidth': 3, 'markersize': 6,'color':col}
         self.lines['crank']     = ax.plot([], [], color='k',linewidth=3)[0]
         self.lines['foot']      = ax.plot([], [], **common_style)[0]
@@ -163,9 +163,7 @@ class Human2D:
         self.lines['torso']     = ax.plot([], [], **common_style)[0]
         self.lines['arm']       = ax.plot([], [], **common_style)[0]
         return self.lines.values()
-    
     #
-
     def animation_step_pyplot(self, frame):
         '''
         Plots the current frame
@@ -178,10 +176,13 @@ class Human2D:
         # Crak has to go from bb to pedal spindle and not the foot so
         # The cleat set-back has to be included
         direction=self.bike.side_to_sign()
+        
         spindle_loc=np.array([
             self.foot[0]-direction*self.cleat_set_back*np.cos(self.foot_angle*np.pi/180),
             self.foot[1]+self.cleat_set_back*np.sin(self.foot_angle*np.pi/180)
         ])
+
+
         self.lines['crank'].set_data([spindle_loc[0],bb_loc[0]],[spindle_loc[1],bb_loc[1]])
         self.lines['upper_leg'].set_data([self.hip[0], self.knee[0]], [self.hip[1], self.knee[1]])
         self.lines['foot'].set_data([self.foot[0],self.ankle[0]],[self.foot[1],self.ankle[1]])
