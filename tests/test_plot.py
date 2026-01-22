@@ -37,15 +37,15 @@ if __name__=="__main__":
     cyclist.update_knee()
     cyclist.update_shoulder()
 
-    #Set-up plotting 
+    #Set-up plotting  using pyplot
     fig,ax=plt.subplots()
     ax.set_xlim(-1200,800)
     ax.set_ylim(-1200,800)
     ax.set_aspect('equal')
     #initialize animation
-    cyclist.setup_plot(ax,col='red')
-    anim=FuncAnimation(fig,cyclist.animation_step,frames=500,interval=150,blit=True)
-    
+    cyclist.setup_plot_pyplot(ax,col='red')
+    anim=FuncAnimation(fig,cyclist.animation_step_pyplot,frames=500,interval=150,blit=True)
     plt.show()
 
 
+    

@@ -111,6 +111,7 @@ class Human2D:
 
         if len_diff > (self.arm_len+self.torso_len):
             self.shoulder= self.hip +(diff/len_diff)*self.torso_len 
+        
         else:
             #use cosine theorem to deal with knee angles
             cos_alpha = (self.torso_len**2 + len_diff**2 - self.arm_len**2) / (2 * self.torso_len*len_diff )
@@ -132,22 +133,6 @@ class Human2D:
             ]) 
 
     #For animations
-    # Initialize the plots 
-    def setup_plot(self, ax,col:str='k'):
-        '''
-        Initialize the plotting objects
-        '''
-        self.bike.plot_bike(ax,self.hip)
-        common_style = {'marker': 'o', 'linewidth': 3, 'markersize': 6,'color':col}
-        self.lines['crank']     = ax.plot([], [], color='k',linewidth=3)[0]
-        self.lines['foot']      = ax.plot([], [], **common_style)[0]
-        self.lines['upper_leg'] = ax.plot([], [], **common_style)[0]
-        self.lines['lower_leg'] = ax.plot([], [], **common_style)[0]
-        self.lines['torso']     = ax.plot([], [], **common_style)[0]
-        self.lines['arm']       = ax.plot([], [], **common_style)[0]
-        return self.lines.values()
-    
-    #
     def start_pedaling(self,frame)->None:
         '''
         Helper function intoruding dynamics->pedalling
@@ -164,8 +149,24 @@ class Human2D:
         )
         self.update_knee()      
 
-     
-    def animation_step(self, frame):
+    # Initialize the plots 
+    def setup_plot_pyplot(self, ax,col:str='k'):
+        '''
+        Initialize the plotting objects
+        '''
+        self.bike.plot_bike(ax,self.hip)
+        common_style = {'marker': 'o', 'linewidth': 3, 'markersize': 6,'color':col}
+        self.lines['crank']     = ax.plot([], [], color='k',linewidth=3)[0]
+        self.lines['foot']      = ax.plot([], [], **common_style)[0]
+        self.lines['upper_leg'] = ax.plot([], [], **common_style)[0]
+        self.lines['lower_leg'] = ax.plot([], [], **common_style)[0]
+        self.lines['torso']     = ax.plot([], [], **common_style)[0]
+        self.lines['arm']       = ax.plot([], [], **common_style)[0]
+        return self.lines.values()
+    
+    #
+
+    def animation_step_pyplot(self, frame):
         '''
         Plots the current frame
         '''
@@ -189,3 +190,30 @@ class Human2D:
         self.lines['arm'].set_data([self.wrist[0], self.shoulder[0]], [self.wrist[1], self.shoulder[1]])
         
         return self.lines.values()
+    
+
+    def animation_step_plotly(self, frame)->tuple[list[float],list[float]]:
+        '''
+        return position of body parts and crankarm
+        '''
+        x,y=[],[]
+        x_crank,y_crank=[],[]
+        #Start the movement
+        self.start_pedaling(frame)
+        
+        # Update positions of "sticks" in the animation
+        bb_loc=self.bike.calc_bb_loc()
+        # Crak has to go from bb to pedal spindle and not the foot so
+        # The cleat set-back has to be included
+        direction=self.bike.side_to_sign()
+        spindle_loc=np.array([
+            self.foot[0]-direction*self.cleat_set_back*np.cos(self.foot_angle*np.pi/180),
+            self.foot[1]+self.cleat_set_back*np.sin(self.foot_angle*np.pi/180)
+        ])
+        x.extend([self.foot[0],self.ankle[0],self.knee[0],self.hip[0],self.shoulder[0],self.wrist[0]])
+        y.extend([self.foot[1],self.ankle[1],self.knee[1],self.hip[1],self.shoulder[1],self.wrist[1]])
+        
+        x_crank.extend([spindle_loc[0],bb_loc[0]])
+        y_crank.extend([spindle_loc[1],bb_loc[1]])
+
+        return x,y,x_crank,y_crank

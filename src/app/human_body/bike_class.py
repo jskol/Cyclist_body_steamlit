@@ -153,6 +153,71 @@ class Bike:
             **common
         )#stem
 
+    def plot_bike_plotly(self,saddle_loc:NDArray=np.array([0,0]))->tuple[list[float],list[float]]:
+        x,y=[],[]
+        sign=self.side_to_sign()
+        POC_dict=self.get_points_of_contact(saddle_loc) #Calculate location of POC
+        bb_loc=POC_dict['bb_loc']
+
+        #seat-tube
+        x.extend([saddle_loc[0],bb_loc[0]])
+        y.extend([saddle_loc[1],bb_loc[1]])
+
+        wheel_y=bb_loc[1]+self.bb_drop
+        wheel_x=bb_loc[0]-sign*(60+0.5*self.wheel_diameter)
+        front_wheel_x=wheel_x+sign*self.wheel_base
+        #Wheels
+        for wheel_center in [np.array([wheel_x,wheel_y]),np.array([front_wheel_x,wheel_y])]:
+            temp_wheel_x=[None]
+            temp_wheel_y=[None]
+            for ang in np.linspace(0,2*np.pi,num=100):
+                temp_wheel_x.append(0.5*self.wheel_diameter*np.cos(ang)+wheel_center[0])
+                temp_wheel_y.append(0.5*self.wheel_diameter*np.sin(ang)+wheel_center[1])
+            temp_wheel_x.append(None)
+            temp_wheel_y.append(None)
+            x.extend(temp_wheel_x)
+            y.extend(temp_wheel_y)
+
+        #rear-stays
+        x.extend([None,bb_loc[0],wheel_x,None])
+        y.extend([None,bb_loc[1],wheel_y,None])
+
+        #fork
+        steerer=self.calc_steerer_tube_loc(saddle_loc)
+        x.extend([front_wheel_x,steerer[0]])
+        y.extend([wheel_y,steerer[1]])
+
+        #bottom tube
+        x.extend([None,bb_loc[0],front_wheel_x-sign*self.fork_len/np.tan(self.head_tube_angle*np.pi/180),None])
+        y.extend([None,bb_loc[1],wheel_y+self.fork_len/np.sin(self.head_tube_angle*np.pi/180),None])
+
+            
+        #top_tube
+        seat_tube_end=np.array([
+            bb_loc[0]-sign*self.seat_tube_len*np.cos(self.seat_tube_angle*np.pi/180),
+            bb_loc[1]+self.seat_tube_len*np.sin(self.seat_tube_angle*np.pi/180),
+        ])
+        x.extend([None,steerer[0],seat_tube_end[0],None]),
+        y.extend([None,steerer[1],seat_tube_end[1],None])
+
+        # Rear top fork
+        
+        x.extend([None,seat_tube_end[0],wheel_x,None])
+        y.extend([None,seat_tube_end[1],wheel_y,None])
+
+        #Spacers
+        x.extend([None,steerer[0],steerer[0]-sign*self.speacers/np.tan(self.head_tube_angle*np.pi/180),None])
+        y.extend([None,steerer[1],steerer[1]+self.speacers/np.sin(self.head_tube_angle*np.pi/180),None])
+
+        #Stem
+        x.extend([None,steerer[0]-sign*self.speacers/np.tan(self.head_tube_angle*np.pi/180),\
+                POC_dict['hoods_loc'][0],None])
+        y.extend([None,steerer[1]+self.speacers/np.sin(self.head_tube_angle*np.pi/180),\
+                POC_dict['hoods_loc'][1],None])
+
+
+        return x,y
+
 
 
 if __name__=="__main__":
