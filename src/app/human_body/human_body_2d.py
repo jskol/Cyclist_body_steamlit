@@ -103,7 +103,7 @@ class Human2D:
         shoulder whihch is determined by the location
         of hips and wrists in space
         '''
-        diff= self.arm_len-self.hip # distance between them
+        diff= self.wrist-self.hip # distance between them
         len_diff=np.linalg.norm(diff)
 
         #if we max out then return leg fully straighten
@@ -121,12 +121,13 @@ class Human2D:
             # 3. leg angle
             beta = np.arctan2(diff[1], diff[0])
             
-            # 4. pick "physical" knee angle 
+            # 4. pick "physical" shoulder angle --> only plus sign solution
+
             angle = beta + alpha if self.hip[0]<self.wrist[0] else beta - alpha
             
             # 5. Update shoulder
             self.shoulder = np.array([
-                self.hip[0] + self.torso_len* np.cos(angle),
+                self.hip[0] +self.torso_len* np.cos(angle),
                 self.hip[1] + self.torso_len* np.sin(angle)
             ]) 
 

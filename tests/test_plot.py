@@ -13,8 +13,8 @@ if __name__=="__main__":
     bike.stem_angle=-17
     bike.side='L'
     cyclist=Human2D(
-        arm_len=700,
-        torso_len=600,
+        arm_len=600,
+        torso_len=500,
         u_leg_len=500,
         l_leg_len=500,
         bike=bike,
