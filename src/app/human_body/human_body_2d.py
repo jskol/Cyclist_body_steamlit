@@ -103,7 +103,7 @@ class Human2D:
         shoulder whihch is determined by the location
         of hips and wrists in space
         '''
-        diff= self.elbo-self.hip # distance between them
+        diff= self.arm_len-self.hip # distance between them
         len_diff=np.linalg.norm(diff)
 
         #if we max out then return leg fully straighten
