@@ -100,7 +100,7 @@ def animation_native(cyclist:Human2D,current_time:float=0)->None:
                 plot_bgcolor="#FBFAFA",
                 showlegend=False,
                 xaxis=dict(range=xrange, autorange=False, showgrid=False,fixedrange=True,visible=False),
-                yaxis=dict(range=[y_min*1.01, np.amax([cyclist.shoulder[1],cyclist.hip[1]])*1.2], autorange=False, showgrid=False,scaleanchor="x",scaleratio=1,fixedrange=True,visible=False),
+                yaxis=dict(range=[y_min*1.01, np.amax([cyclist.shoulder[1],cyclist.hip[1]])+100], autorange=False, showgrid=False,scaleanchor="x",scaleratio=1,fixedrange=True,visible=False),
                 sliders=[{
                     "active": 0,
                     "currentvalue": {"prefix": "Time stamp"},
