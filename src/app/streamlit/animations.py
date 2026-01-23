@@ -5,47 +5,23 @@ import plotly.graph_objects as go
 sys.path.append(os.path.join(os.getcwd(),'src'))
 from app.human_body.human_body_2d import Human2D
 
-def animation_refresh(cyclist:Human2D)->None:
-    run_anim = st.toggle("Start pedalling", value=True)
-    if 't' not in st.session_state:
-        st.session_state.t = 0
-
-    placeholder=st.empty()
-    x, y,_,_ = cyclist.animation_step_plotly(0)
-    time_step=0.1
-    while True:
-        if run_anim:
-            st.session_state.t += time_step
-            t = st.session_state.t*2*np.pi*time_step
-            x, y,_,_ = cyclist.animation_step_plotly(t)
-
-        fig = go.Figure(
-            go.Scatter(x=x, y=y, mode="lines+markers", line=dict(color="#1404F7", width=5))
-            ,layout=go.Layout(
-                plot_bgcolor="#FBFAFA"
-                )
-            )
-        fig.update_layout(
-            xaxis=dict(range=[-800, 400],showgrid=False),
-            yaxis=dict(range=[-1000, 400],showgrid=False,scaleanchor="x",scaleratio=1),
-            height=800)
-        
-        # Wyświetlamy
-        placeholder.plotly_chart(fig, width='content', key="Pedalling stick figure",config={'displayModeBar': False})
-        time.sleep(0.01)
-
-
 def animation_native(cyclist:Human2D,current_time:float=0)->None:
     #plot a bike
     bike_x,bike_y=cyclist.bike.plot_bike_plotly(np.array([0.,0.]))
     bike=[
         go.Scatter(x=bike_x,y=bike_y,mode="lines",line=dict(color='black'))
     ]
-    
+    #make the x_range span from fron wheel to rearwheel
+    x_arr=np.array(list(filter(lambda x: x is not None, bike_x))) #Remove Nones
+    y_arr=np.array(list(filter(lambda x: x is not None, bike_y))) #Remove Nones
+    x_max=np.amax(x_arr)
+    x_min=np.amin(x_arr)
+    y_min=np.amin(y_arr)
     
     frames_count = 50
     frames = []
     frames_name=[]
+    slider_steps=[]
     for i in range(frames_count):
         t = ((i+current_time) / frames_count) * 2 * np.pi
         x, y, x_crank,y_crank = cyclist.animation_step_plotly(t)
@@ -53,27 +29,42 @@ def animation_native(cyclist:Human2D,current_time:float=0)->None:
         frames.append(
             go.Frame(data=[
                 go.Scatter(x=x_crank, y=y_crank, mode="lines+markers",line=dict(color='black')),
-                go.Scatter(x=x, y=y, mode="lines+markers",line=dict(color="#2606F9"))
+                go.Scatter(x=x, y=y, mode="lines+markers",line=dict(color="#2606F9",width=5))
             ],
             traces=[1,2], #substitute 2nd and 3rd entry (1st one is the bike (fixed))
             name=frames_name[-1])
             )
+        #needed for sliders
+        step = {
+            "method": "animate",
+            "label": f"{i}",
+            "args": [[frames_name[-1]], {
+                "mode": "immediate",
+                "frame": {"duration": 0, "redraw": False},
+            "transition": {"duration": 0}
+            }]
+        }
+        slider_steps.append(step)
+        ## Done
 
     x_init, y_init,x_crank_init,y_crank_init = cyclist.animation_step_plotly(0)
-    xrange=[-800, 400]
-    if cyclist.bike.side=='R':
-        xrange=[-1*x for x in xrange[::-1]]
+    xrange=[x_min-10,x_max+10]
     fig = go.Figure(
         data=bike+[
             go.Scatter(x=x_crank_init, y=y_crank_init, mode="lines+markers",line=dict(color='black')),
-            go.Scatter(x=x_init, y=y_init, mode="lines+markers",line=dict(color="#2606F9"))
+            go.Scatter(x=x_init, y=y_init, mode="lines+markers",line=dict(color="#2606F9",width=5),marker=dict(size=10))
             ], 
         layout=go.Layout(
             plot_bgcolor="#FBFAFA",
-            xaxis=dict(range=xrange, autorange=False, showgrid=False,fixedrange=True),
-            yaxis=dict(range=[-1000, cyclist.shoulder[1]*1.1], autorange=False, showgrid=False,scaleanchor="x",scaleratio=1,fixedrange=True),
+            showlegend=False,
+            xaxis=dict(range=xrange, autorange=False, showgrid=False,fixedrange=True,visible=False),
+            yaxis=dict(range=[y_min*1.01, cyclist.shoulder[1]*1.2], autorange=False, showgrid=False,scaleanchor="x",scaleratio=1,fixedrange=True,visible=False),
             updatemenus=[{
                 "type": "buttons",
+                "direction" :"left",
+                "x":0.5,"y":-0.1,
+                "bgcolor":"#F30B26",
+                "font":{"size":15},
                 "buttons": [
                     {
                         "label": "Play",
@@ -95,7 +86,26 @@ def animation_native(cyclist:Human2D,current_time:float=0)->None:
         ),
         frames=frames
     )
-    st.plotly_chart(fig)#,width='content')
-
-
-
+    col1,col2=st.columns([1,1])
+    with col1:
+        st.plotly_chart(fig)
+    with col2: 
+        fig_slider=go.Figure(
+            data=bike+[
+                go.Scatter(x=x_crank_init, y=y_crank_init, mode="lines+markers",line=dict(color='black')),
+                go.Scatter(x=x_init, y=y_init, mode="lines+markers",line=dict(color="#2606F9",width=5),marker=dict(size=10))
+                ], 
+            layout=go.Layout(
+                plot_bgcolor="#FBFAFA",
+                showlegend=False,
+                xaxis=dict(range=xrange, autorange=False, showgrid=False,fixedrange=True,visible=False),
+                yaxis=dict(range=[y_min*1.01, cyclist.shoulder[1]*1.2], autorange=False, showgrid=False,scaleanchor="x",scaleratio=1,fixedrange=True,visible=False),
+                sliders=[{
+                    "active": 0,
+                    "currentvalue": {"prefix": "Time stamp"},
+                    "steps": slider_steps
+                }]
+            ),
+            frames=frames
+        )
+        st.plotly_chart(fig_slider)
