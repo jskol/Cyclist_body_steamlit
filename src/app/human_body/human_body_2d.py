@@ -154,7 +154,9 @@ class Human2D:
             diff2= self.shoulder- self.wrist
             print(f'diff={diff2}')
             true_ang=np.arctan2(diff2[1],diff2[0])- (self.elbow_bend)*np.pi/180
-
+            if true_ang> np.pi/2:
+                true_ang -= np.pi/2
+                
             print(f'True ang ={true_ang}')
             self.elbow = np.array([
                 self.wrist[0]-direction*self.l_arm_len*np.cos(true_ang),
