@@ -32,7 +32,7 @@ class Human2D:
     # for future improvements #
     u_arm_len:float=None
     l_arm_len:float=None
-    arm_bend:float=None
+    elbow_bend:float=None
     elbow:NDArray=None
     ###########################
 
@@ -70,6 +70,7 @@ class Human2D:
         ])
         self.ankle=ankle_pos 
 
+
     # Update adjustable joints
     def update_knee(self):
         '''
@@ -85,20 +86,23 @@ class Human2D:
 
         if len_diff > (self.l_leg_len+self.u_leg_len):
             self.knee= self.hip +(diff/len_diff)*self.u_leg_len 
+            raise Exception("Overextension of the leg")
         else:
             #use cosine theorem to deal with knee angles
             cos_alpha = (self.u_leg_len**2 + len_diff**2 - self.l_leg_len**2) / (2 * self.u_leg_len*len_diff )
             
+            #true knee angle
             # use clip to avoid floating point errors
             alpha = np.arccos(np.clip(cos_alpha, -1.0, 1.0))
             
-            # 3. leg angle
+            # 3. leg angle with respect to x,y coordinate system
             beta = np.arctan2(diff[1], diff[0])
             
             # 4. pick "physical" knee angle 
+            # transfored to x,y coordante system
             sign=self.bike.side_to_sign()
-            angle = beta + sign*alpha #if self.hip[0]<self.ankle[0] else beta - alpha
-            
+            angle = beta + sign*alpha 
+
             # 5. Update knee postion
             self.knee = np.array([
                 self.hip[0] + self.u_leg_len* np.cos(angle),
@@ -114,31 +118,48 @@ class Human2D:
         diff= self.wrist-self.hip # distance between them
         len_diff=np.linalg.norm(diff)
 
-        #if we max out then return leg fully straighten
-        #from hip towards the angkle
+        #Arms are bend so we are now dealing with 
+        # an effecive arm length wich is sorten 
+        #from the full length due to elbow bend
+        #effective_arm=(self.u_arm_len+self.l_arm_len)
+        L_ang=self.elbow_bend*np.pi/180
+        U_ang=np.arcsin(np.clip(self.l_arm_len*np.sin(L_ang)/self.u_arm_len, -1.,1.))
+        effective_arm=self.u_arm_len*np.cos(U_ang)+ self.l_arm_len*np.cos(L_ang)
 
-        if len_diff > (self.arm_len+self.torso_len):
-            self.shoulder= self.hip +(diff/len_diff)*self.torso_len 
-        
+        if len_diff > (effective_arm+self.torso_len):
+            #self.shoulder= self.hip +(diff/len_diff)*self.torso_len 
+            raise Exception("Overextension of the back")
         else:
             #use cosine theorem to deal with knee angles
-            cos_alpha = (self.torso_len**2 + len_diff**2 - self.arm_len**2) / (2 * self.torso_len*len_diff )
-    
+            print(f'torso={self.torso_len} and len_diff={len_diff}')
+            cos_alpha = (self.torso_len**2 + len_diff**2 - effective_arm**2) / (2 * self.torso_len*len_diff )
             # use clip to avoid floating point errors
             alpha = np.arccos(np.clip(cos_alpha, -1.0, 1.0))
+            print(f'alpha={alpha}')
             
-            # 3. leg angle
             beta = np.arctan2(diff[1], diff[0])
-            
+            print(f'beta= {beta}')
             # 4. pick "physical" shoulder angle --> only plus sign solution
-
-            angle = beta + alpha if self.hip[0]<self.wrist[0] else beta - alpha
-            
-            # 5. Update shoulder
+            direction=self.bike.side_to_sign()
+            angle = beta +direction*alpha # if self.hip[0] < self.wrist[0] else beta - alpha
+            print(f'angs {angle} {beta} {alpha}')        
+            # 5. Update shoulder (WORKS!)
             self.shoulder = np.array([
-                self.hip[0] +self.torso_len* np.cos(angle),
+                self.hip[0] + self.torso_len* np.cos(angle),
                 self.hip[1] + self.torso_len* np.sin(angle)
-            ]) 
+            ])
+
+            #update elbow
+            diff2= self.shoulder- self.wrist
+            print(f'diff={diff2}')
+            true_ang=np.arctan2(diff2[1],diff2[0])- (self.elbow_bend)*np.pi/180
+
+            print(f'True ang ={true_ang}')
+            self.elbow = np.array([
+                self.wrist[0]-direction*self.l_arm_len*np.cos(true_ang),
+                self.wrist[1]+self.l_arm_len*np.sin(true_ang)
+            ])
+
 
     #For animations
     def start_pedaling(self,frame,saddle_loc:NDArray=np.zeros(2))->None:
@@ -175,8 +196,8 @@ class Human2D:
             self.foot[0]-direction*self.cleat_set_back*np.cos(self.foot_angle*np.pi/180),
             self.foot[1]+self.cleat_set_back*np.sin(self.foot_angle*np.pi/180)
         ])
-        x.extend([self.foot[0],self.ankle[0],self.knee[0],self.hip[0],self.shoulder[0],self.wrist[0]])
-        y.extend([self.foot[1],self.ankle[1],self.knee[1],self.hip[1],self.shoulder[1],self.wrist[1]])
+        x.extend([self.foot[0],self.ankle[0],self.knee[0],self.hip[0],self.shoulder[0],self.elbow[0],self.wrist[0]])
+        y.extend([self.foot[1],self.ankle[1],self.knee[1],self.hip[1],self.shoulder[1],self.elbow[1],self.wrist[1]])
         
         x_crank.extend([spindle_loc[0],bb_loc[0]])
         y_crank.extend([spindle_loc[1],bb_loc[1]])

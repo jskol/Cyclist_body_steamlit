@@ -58,7 +58,9 @@ def animation_native(cyclist:Human2D,current_time:float=0)->None:
             plot_bgcolor="#FBFAFA",
             showlegend=False,
             xaxis=dict(range=xrange, autorange=False, showgrid=False,fixedrange=True,visible=False),
-            yaxis=dict(range=[y_min*1.01, cyclist.shoulder[1]*1.2], autorange=False, showgrid=False,scaleanchor="x",scaleratio=1,fixedrange=True,visible=False),
+            yaxis=dict(range=[y_min*1.01, 800
+                              #cyclist.shoulder[1]*1.2
+                            ], autorange=False, showgrid=False,scaleanchor="x",scaleratio=1,fixedrange=True,visible=False),
             updatemenus=[{
                 "type": "buttons",
                 "direction" :"left",

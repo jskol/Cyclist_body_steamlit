@@ -16,7 +16,9 @@ body_geo,animation,bike_geo=st.columns([0.2,0.6,0.2])
 # A helper dict for body parts
 body_points={
     'torso_len': ['Torso length',np.arange(200,1000,5),500],
-    'arm_len':['Arm lenght',np.arange(200,1000,5),500],
+    'u_arm_len':['Upper Arm lenght',np.arange(100,500,5),250],
+    'l_arm_len':['Lower Arm lenght',np.arange(100,500,5),250],
+    'elbow_bend':['Elbow bend',np.arange(0,120,1),0],
     'u_leg_len':['Upper leg lenght',np.arange(200,1000,5),500],
     'l_leg_len':['Lower leg lenght',np.arange(200,1000,5),500],
     'foot_len':['Foot length',np.arange(200,500,5),285],
@@ -29,7 +31,10 @@ with body_geo:
     for POI,vals in body_points.items():
         slider=st.select_slider(vals[0],options=[x for x in vals[1]],value=vals[2])
         body_dict[POI]=slider
-
+    #For testing add arm_len
+    body_dict['arm_len']=body_dict['u_arm_len']+body_dict['l_arm_len']
+    ##
+    
     foot_size=body_dict['foot_len']
     cleat_SB=st.select_slider(f'Set your cleat setback',options=[x for x in np.arange(0,foot_size,1)],value=np.floor(foot_size/3))
     body_dict['cleat_set_back']=cleat_SB
