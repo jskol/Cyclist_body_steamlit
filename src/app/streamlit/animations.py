@@ -24,8 +24,8 @@ def animation_native(cyclist:Human2D,current_time:float=0)->None:
     slider_steps=[]
     for i in range(frames_count):
         t = ((i+current_time) / frames_count) * 2 * np.pi
-        x, y, x_crank,y_crank = cyclist.animation_step_plotly(t)
         frames_name.append(f'T={t}')
+        x, y, x_crank,y_crank = cyclist.animation_step_plotly(t)
         frames.append(
             go.Frame(data=[
                 go.Scatter(x=x_crank, y=y_crank, mode="lines+markers",line=dict(color='black')),
@@ -58,8 +58,8 @@ def animation_native(cyclist:Human2D,current_time:float=0)->None:
             plot_bgcolor="#FBFAFA",
             showlegend=False,
             xaxis=dict(range=xrange, autorange=False, showgrid=False,fixedrange=True,visible=False),
-            yaxis=dict(range=[y_min*1.01,cyclist.shoulder[1]*1.2
-                            ], autorange=False, showgrid=False,scaleanchor="x",scaleratio=1,fixedrange=True,visible=False),
+            yaxis=dict(range=[y_min*1.01,np.amax([cyclist.shoulder[1],cyclist.hip[1]])+100],
+                        autorange=False, showgrid=False,scaleanchor="x",scaleratio=1,fixedrange=True,visible=False),
             updatemenus=[{
                 "type": "buttons",
                 "direction" :"left",
@@ -100,7 +100,7 @@ def animation_native(cyclist:Human2D,current_time:float=0)->None:
                 plot_bgcolor="#FBFAFA",
                 showlegend=False,
                 xaxis=dict(range=xrange, autorange=False, showgrid=False,fixedrange=True,visible=False),
-                yaxis=dict(range=[y_min*1.01, cyclist.shoulder[1]*1.2], autorange=False, showgrid=False,scaleanchor="x",scaleratio=1,fixedrange=True,visible=False),
+                yaxis=dict(range=[y_min*1.01, np.amax([cyclist.shoulder[1],cyclist.hip[1]])+100], autorange=False, showgrid=False,scaleanchor="x",scaleratio=1,fixedrange=True,visible=False),
                 sliders=[{
                     "active": 0,
                     "currentvalue": {"prefix": "Time stamp"},

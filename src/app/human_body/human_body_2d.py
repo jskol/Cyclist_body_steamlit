@@ -127,7 +127,8 @@ class Human2D:
         effective_arm=self.u_arm_len*np.cos(U_ang)+ self.l_arm_len*np.cos(L_ang)
 
         if len_diff > (effective_arm+self.torso_len):
-            #self.shoulder= self.hip +(diff/len_diff)*self.torso_len 
+            self.shoulder= self.hip +(diff/len_diff)*self.torso_len 
+            self.elbow=self.hip +(diff/len_diff)*self.torso_len
             raise Exception("Overextension of the back")
         else:
             #use cosine theorem to deal with knee angles
@@ -149,8 +150,9 @@ class Human2D:
             diff2= self.shoulder- self.wrist
             print(f'diff={diff2}')
             true_ang=np.arctan2(diff2[1],diff2[0])- (self.elbow_bend)*np.pi/180
-            if true_ang>np.pi/2:
+            if true_ang> np.pi/2:
                 true_ang -= np.pi/2
+                
             print(f'True ang ={true_ang}')
             self.elbow = np.array([
                 self.wrist[0]-direction*self.l_arm_len*np.cos(true_ang),

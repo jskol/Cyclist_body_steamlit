@@ -90,30 +90,34 @@ with animation:
     bike=Bike(**bike_geo_dict,**frame_geometry_dict)
     bike.side='L'
 
-    cyclist=Human2D(
-        **body_dict,
-        bike=bike,
-        )
-
     st.title('Bikefit symulator')
     swith_sides = st.toggle("Swith sides", key='side_swich',value=False)
     if swith_sides:
         bike.side='R'
     
-    #Sets the Frame of reference and sat up the rider on a bike
-    #st.text(f'bb location is {POC_dict['bb_loc']} ')
-    POC_dict=bike.get_points_of_contact(np.zeros(2)) #fix the seat a (0.,0.) #cyclist.hip)
-    cyclist.update_hip(POC_dict['seat_loc']+np.array([move_hips,0.]))
 
-    # sets the initial positions
-    foot_on_the_pedal=POC_dict['bb_loc']
-    foot_on_the_pedal[1]-=bike.crank_len
-    cyclist.update_foot(foot_on_the_pedal)
-    cyclist.update_wrist(POC_dict['hoods_loc'])
-    cyclist.update_knee()
-    cyclist.update_shoulder()
+    try:
+        cyclist=Human2D(
+            **body_dict,
+            bike=bike,
+            )
+
+        #Sets the Frame of reference and sat up the rider on a bike
+        #st.text(f'bb location is {POC_dict['bb_loc']} ')
+        POC_dict=bike.get_points_of_contact(np.zeros(2)) #fix the seat a (0.,0.) #cyclist.hip)
+        cyclist.update_hip(POC_dict['seat_loc']+np.array([move_hips,0.]))
+
+        # sets the initial positions
+        foot_on_the_pedal=POC_dict['bb_loc']
+        foot_on_the_pedal[1]-=bike.crank_len
+        cyclist.update_foot(foot_on_the_pedal)
+        cyclist.update_wrist(POC_dict['hoods_loc'])
+
+        cyclist.update_knee()
+        cyclist.update_shoulder()
 
 
-    #animation_refresh(cyclist,run_anim)
-    animation_native(cyclist)
-    
+        #animation_refresh(cyclist,run_anim)
+        animation_native(cyclist)
+    except Exception as e:
+        st.text(f'Impossible fit due to {e}')    
