@@ -131,18 +131,14 @@ class Human2D:
             raise Exception("Overextension of the back")
         else:
             #use cosine theorem to deal with knee angles
-            print(f'torso={self.torso_len} and len_diff={len_diff}')
             cos_alpha = (self.torso_len**2 + len_diff**2 - effective_arm**2) / (2 * self.torso_len*len_diff )
             # use clip to avoid floating point errors
             alpha = np.arccos(np.clip(cos_alpha, -1.0, 1.0))
-            print(f'alpha={alpha}')
             
             beta = np.arctan2(diff[1], diff[0])
-            print(f'beta= {beta}')
             # 4. pick "physical" shoulder angle --> only plus sign solution
             direction=self.bike.side_to_sign()
             angle = beta +direction*alpha # if self.hip[0] < self.wrist[0] else beta - alpha
-            print(f'angs {angle} {beta} {alpha}')        
             # 5. Update shoulder (WORKS!)
             self.shoulder = np.array([
                 self.hip[0] + self.torso_len* np.cos(angle),
@@ -153,7 +149,8 @@ class Human2D:
             diff2= self.shoulder- self.wrist
             print(f'diff={diff2}')
             true_ang=np.arctan2(diff2[1],diff2[0])- (self.elbow_bend)*np.pi/180
-
+            if true_ang>np.pi/2:
+                true_ang -= np.pi/2
             print(f'True ang ={true_ang}')
             self.elbow = np.array([
                 self.wrist[0]-direction*self.l_arm_len*np.cos(true_ang),
@@ -172,7 +169,7 @@ class Human2D:
         bb_loc=self.bike.calc_bb_loc(saddle_loc)
         direction=self.bike.side_to_sign()
         self.update_foot(np.array([
-            bb_loc[0] - direction*crank_len * np.cos(t),
+            bb_loc[0] - direction* crank_len * np.cos(t),
             bb_loc[1] + crank_len * np.sin(t)
         ])
         )
