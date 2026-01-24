@@ -18,23 +18,26 @@ body_points={
     'torso_len': ['Torso length [mm]',np.arange(200,1000,5),500],
     'u_arm_len':['Upper Arm lenght[mm]',np.arange(100,500,5),250],
     'l_arm_len':['Lower Arm lenght [mm]',np.arange(100,500,5),250],
-    'elbow_bend':['Elbow bend [deg]',np.arange(0,120,1),0],
     'u_leg_len':['Upper leg lenght [mm]',np.arange(200,1000,5),400],
     'l_leg_len':['Lower leg lenght [mm]',np.arange(200,1000,5),450],
     'foot_len':['Foot length [mm]',np.arange(200,500,5),285],
+    'elbow_bend':['Elbow bend [deg]',np.arange(0,120,1),0],
     'foot_angle':['Foot angle [deg]', np.arange(-45,45,1),15],
 }
 # Define body geometry from sliders 
 with body_geo:
     body_dict={}
     st.header('Body geometry')
-    for POI,vals in body_points.items():
+    with st.expander('Body dimensions'):
+        for POI,vals in list(body_points.items())[:-2]:
+            slider=st.select_slider(vals[0],options=[x for x in vals[1]],value=vals[2])
+            body_dict[POI]=slider
+        #For testing add arm_len
+        #body_dict['arm_len']=body_dict['u_arm_len']+body_dict['l_arm_len']
+        ##
+    for POI,vals in list(body_points.items())[-2:]:
         slider=st.select_slider(vals[0],options=[x for x in vals[1]],value=vals[2])
         body_dict[POI]=slider
-    #For testing add arm_len
-    body_dict['arm_len']=body_dict['u_arm_len']+body_dict['l_arm_len']
-    ##
-    
     foot_size=body_dict['foot_len']
     cleat_SB=st.select_slider(f'Set your cleat setback [mm]',options=[x for x in np.arange(0,foot_size,1)],value=np.floor(foot_size/3))
     body_dict['cleat_set_back']=cleat_SB
