@@ -19,8 +19,8 @@ body_points={
     'u_arm_len':['Upper Arm lenght',np.arange(100,500,5),250],
     'l_arm_len':['Lower Arm lenght',np.arange(100,500,5),250],
     'elbow_bend':['Elbow bend',np.arange(0,120,1),0],
-    'u_leg_len':['Upper leg lenght',np.arange(200,1000,5),500],
-    'l_leg_len':['Lower leg lenght',np.arange(200,1000,5),500],
+    'u_leg_len':['Upper leg lenght',np.arange(200,1000,5),400],
+    'l_leg_len':['Lower leg lenght',np.arange(200,1000,5),450],
     'foot_len':['Foot length',np.arange(200,500,5),285],
     'foot_angle':['Foot angle', np.arange(-45,45,1),15],
 }
@@ -70,8 +70,6 @@ with bike_geo:
     move_hips=st.select_slider(f'Saddle setback',options=[x for x in np.arange(-150,150,5)],value=0) 
 
 
-
-
 #animation page
 with animation:
         
@@ -91,10 +89,13 @@ with animation:
     bike.side='L'
 
     st.title('Bikefit symulator')
-    swith_sides = st.toggle("Swith sides", key='side_swich',value=False)
-    if swith_sides:
-        bike.side='R'
-    
+    switch_1,switch_2=st.columns([0.5,0.5])
+    with switch_1:
+        swith_sides = st.toggle("Swith sides", key='side_swich',value=False)
+        if swith_sides:
+            bike.side='R'
+    with switch_2:
+        plot_angles=st.toggle("Show angles",key='Show angles',value=False)
 
     try:
         cyclist=Human2D(
@@ -118,6 +119,6 @@ with animation:
 
 
         #animation_refresh(cyclist,run_anim)
-        animation_native(cyclist)
+        animation_native(cyclist,show_angles=plot_angles)
     except Exception as e:
         st.text(f'Impossible fit due to {e}')    

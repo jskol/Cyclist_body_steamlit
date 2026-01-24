@@ -121,7 +121,6 @@ class Human2D:
         #Arms are bend so we are now dealing with 
         # an effecive arm length wich is sorten 
         #from the full length due to elbow bend
-        #effective_arm=(self.u_arm_len+self.l_arm_len)
         L_ang=self.elbow_bend*np.pi/180
         U_ang=np.arcsin(np.clip(self.l_arm_len*np.sin(L_ang)/self.u_arm_len, -1.,1.))
         effective_arm=self.u_arm_len*np.cos(U_ang)+ self.l_arm_len*np.cos(L_ang)
@@ -137,10 +136,10 @@ class Human2D:
             alpha = np.arccos(np.clip(cos_alpha, -1.0, 1.0))
             
             beta = np.arctan2(diff[1], diff[0])
-            # 4. pick "physical" shoulder angle --> only plus sign solution
+            #pick "physical" shoulder angle --> only plus sign solution
             direction=self.bike.side_to_sign()
             angle = beta +direction*alpha # if self.hip[0] < self.wrist[0] else beta - alpha
-            # 5. Update shoulder (WORKS!)
+            #Update shoulder (WORKS!)
             self.shoulder = np.array([
                 self.hip[0] + self.torso_len* np.cos(angle),
                 self.hip[1] + self.torso_len* np.sin(angle)
