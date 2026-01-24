@@ -64,6 +64,19 @@ frame_geometry_dict={}
 
 with bike_geo:
     st.header('Bike geometry')
+    
+    with st.expander('Adjust Frame Geometry'):
+        for k,v in frame_geometry.items():
+            slider=st.select_slider(v[0],options=[x for x in v[1]],value=v[2])
+            frame_geometry_dict[k]=slider
+        wheel_size=0.5*frame_geometry_dict['wheel_diameter']
+        slider=st.select_slider('Frame stack height',options=[x for x in np.arange(wheel_size,2*wheel_size)],value=555)
+        frame_geometry_dict['stack']=slider
+        slider=st.select_slider('Fork lenght',options=[x for x in np.arange(wheel_size,frame_geometry_dict['stack'])],value=358)
+        frame_geometry_dict['fork_len']=slider
+    
+
+    
     bike_geo_dict={}
     for k,v in bike_parts.items():
         slider=st.select_slider(v[0],options=[x for x in v[1]],value=v[2])
@@ -77,17 +90,6 @@ with bike_geo:
 with animation:
     
     st.title('Bikefit symulator') 
-    with st.expander('Adjust Frame Geometry'):
-    
-        for k,v in frame_geometry.items():
-            slider=st.select_slider(v[0],options=[x for x in v[1]],value=v[2])
-            frame_geometry_dict[k]=slider
-        wheel_size=0.5*frame_geometry_dict['wheel_diameter']
-        slider=st.select_slider('Frame stack height',options=[x for x in np.arange(wheel_size,2*wheel_size)],value=555)
-        frame_geometry_dict['stack']=slider
-        slider=st.select_slider('Fork lenght',options=[x for x in np.arange(wheel_size,frame_geometry_dict['stack'])],value=358)
-        frame_geometry_dict['fork_len']=slider
-    
     #Initialize the bike and the rider
     bike=Bike(**bike_geo_dict,**frame_geometry_dict)
     bike.side='L'
