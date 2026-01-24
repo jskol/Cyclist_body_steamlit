@@ -15,14 +15,14 @@ body_geo,animation,bike_geo=st.columns([0.2,0.6,0.2])
 
 # A helper dict for body parts
 body_points={
-    'torso_len': ['Torso length',np.arange(200,1000,5),500],
-    'u_arm_len':['Upper Arm lenght',np.arange(100,500,5),250],
-    'l_arm_len':['Lower Arm lenght',np.arange(100,500,5),250],
-    'elbow_bend':['Elbow bend',np.arange(0,120,1),0],
-    'u_leg_len':['Upper leg lenght',np.arange(200,1000,5),400],
-    'l_leg_len':['Lower leg lenght',np.arange(200,1000,5),450],
-    'foot_len':['Foot length',np.arange(200,500,5),285],
-    'foot_angle':['Foot angle', np.arange(-45,45,1),15],
+    'torso_len': ['Torso length [mm]',np.arange(200,1000,5),500],
+    'u_arm_len':['Upper Arm lenght[mm]',np.arange(100,500,5),250],
+    'l_arm_len':['Lower Arm lenght [mm]',np.arange(100,500,5),250],
+    'elbow_bend':['Elbow bend [deg]',np.arange(0,120,1),0],
+    'u_leg_len':['Upper leg lenght [mm]',np.arange(200,1000,5),400],
+    'l_leg_len':['Lower leg lenght [mm]',np.arange(200,1000,5),450],
+    'foot_len':['Foot length [mm]',np.arange(200,500,5),285],
+    'foot_angle':['Foot angle [deg]', np.arange(-45,45,1),15],
 }
 # Define body geometry from sliders 
 with body_geo:
@@ -36,25 +36,25 @@ with body_geo:
     ##
     
     foot_size=body_dict['foot_len']
-    cleat_SB=st.select_slider(f'Set your cleat setback',options=[x for x in np.arange(0,foot_size,1)],value=np.floor(foot_size/3))
+    cleat_SB=st.select_slider(f'Set your cleat setback [mm]',options=[x for x in np.arange(0,foot_size,1)],value=np.floor(foot_size/3))
     body_dict['cleat_set_back']=cleat_SB
 
 # A helper dict for bike parts
 bike_parts={
-    'saddle_height': ['Saddle height',np.arange(600,850,5),750],
-    'stem_len':['Stem length',np.arange(80,170,5),100],
-    'stem_angle':['Stem angle',np.arange(-25,25,1),-12 ],
-    'speacers':['Stem specers',np.arange(0,35,5),0],
-    'crank_len':['Crank lenght',[160,165,167.5,170,172.5,175],165]
+    'saddle_height': ['Saddle height [mm]',np.arange(600,850,5),750],
+    'stem_len':['Stem length [mm]',np.arange(80,170,5),100],
+    'stem_angle':['Stem angle [mm]',np.arange(-25,25,1),-12 ],
+    'speacers':['Stem specers [mm]',np.arange(0,35,5),0],
+    'crank_len':['Crank lenght [mm]',[160,165,167.5,170,172.5,175],165]
 }
 frame_geometry={
-    'seat_tube_angle':['Seat tube angle',np.arange(70,80,0.5),73.5],
-    'head_tube_angle':['Head tube angle', np.arange(70,80,0.5),73.5],
-    'wheel_diameter':['Wheel diameter', np.arange(600,800,50),700],
-    'wheel_base':['Wheel base',np.arange(800,1200,1),991],
-    'bb_drop':['BB drop', np.arange(-20,100,1),72],
-    'head_tube_len':['Head tube lenght',np.arange(20,220,2),170],
-    'seat_tube_len':['Seattube lenght', np.arange(300,800,1),501]
+    'seat_tube_angle':['Seat tube angle [deg]',np.arange(70,80,0.5),73.5],
+    'head_tube_angle':['Head tube angle [deg]', np.arange(70,80,0.5),73.5],
+    'wheel_diameter':['Wheel diameter [mm]', np.arange(600,800,50),700],
+    'wheel_base':['Wheel base [mm]',np.arange(800,1200,1),991],
+    'bb_drop':['BB drop [mm]', np.arange(-20,100,1),72],
+    'head_tube_len':['Head tube lenght [mm]',np.arange(20,220,2),170],
+    'seat_tube_len':['Seattube lenght [mm]', np.arange(300,800,1),501]
 }
 frame_geometry_dict={}
 
@@ -67,12 +67,13 @@ with bike_geo:
         bike_geo_dict[k]=slider
     
     #The trick is to move human not bike
-    move_hips=st.select_slider(f'Saddle setback',options=[x for x in np.arange(-150,150,5)],value=0) 
+    move_hips=st.select_slider(f'Saddle setback [mm]',options=[x for x in np.arange(-150,150,5)],value=0) 
 
 
 #animation page
 with animation:
-        
+    
+    st.title('Bikefit symulator') 
     with st.expander('Adjust Frame Geometry'):
     
         for k,v in frame_geometry.items():
@@ -88,7 +89,7 @@ with animation:
     bike=Bike(**bike_geo_dict,**frame_geometry_dict)
     bike.side='L'
 
-    st.title('Bikefit symulator')
+    
     switch_1,switch_2=st.columns([0.5,0.5])
     with switch_1:
         swith_sides = st.toggle("Swith sides", key='side_swich',value=False)
