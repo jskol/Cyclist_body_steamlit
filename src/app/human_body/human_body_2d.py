@@ -121,10 +121,18 @@ class Human2D:
         #Arms are bend so we are now dealing with 
         # an effecive arm length wich is sorten 
         #from the full length due to elbow bend
+        # 1) using sine theorem get U_ang
         L_ang=self.elbow_bend*np.pi/180
         U_ang=np.arcsin(np.clip(self.l_arm_len*np.sin(L_ang)/self.u_arm_len, -1.,1.))
-        effective_arm=self.u_arm_len*np.cos(U_ang)+ self.l_arm_len*np.cos(L_ang)
-
+        # 2) get the elbow angle gamma
+        gamma=180-L_ang-U_ang #-> we have a triangle L_ang+U_ang+gamma=180
+        # 3) using cosine theorem
+        #effective_arm=self.u_arm_len*np.cos(U_ang)+ self.l_arm_len*np.cos(L_ang)
+        effective_arm=np.sqrt(
+            self.u_arm_len**2 + self.l_arm_len**2\
+                -2.*self.u_arm_len*self.l_arm_len*np.cos(gamma)
+        )
+        
         if len_diff > (effective_arm+self.torso_len):
             self.shoulder= self.hip +(diff/len_diff)*self.torso_len 
             self.elbow=self.hip +(diff/len_diff)*self.torso_len
@@ -148,13 +156,15 @@ class Human2D:
             #update elbow
             diff2= self.shoulder- self.wrist
             print(f'diff={diff2}')
-            true_ang=np.arctan2(diff2[1],diff2[0])- (self.elbow_bend)*np.pi/180
-            if true_ang> np.pi/2:
-                true_ang -= np.pi/2
-                
+            #pick the smaller angle from arctan
+            ang_temp= np.arctan2(diff2[1],diff2[0])
+            #ang_temp=(ang_temp+np.pi)%(2.*np.pi)-np.pi
+            true_ang=ang_temp + direction*(self.elbow_bend)*np.pi/180
+            
             print(f'True ang ={true_ang}')
             self.elbow = np.array([
-                self.wrist[0]-direction*self.l_arm_len*np.cos(true_ang),
+                self.wrist[0]+self.l_arm_len*np.cos(true_ang),
+                #self.wrist[0]+self.l_arm_len*np.cos(true_ang),
                 self.wrist[1]+self.l_arm_len*np.sin(true_ang)
             ])
 
