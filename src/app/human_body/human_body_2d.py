@@ -125,7 +125,7 @@ class Human2D:
         L_ang=self.elbow_bend*np.pi/180
         U_ang=np.arcsin(np.clip(self.l_arm_len*np.sin(L_ang)/self.u_arm_len, -1.,1.))
         # 2) get the elbow angle gamma
-        gamma=180-L_ang-U_ang #-> we have a triangle L_ang+U_ang+gamma=180
+        gamma=np.pi-L_ang-U_ang #-> we have a triangle L_ang+U_ang+gamma=180
         # 3) using cosine theorem
         #effective_arm=self.u_arm_len*np.cos(U_ang)+ self.l_arm_len*np.cos(L_ang)
         effective_arm=np.sqrt(

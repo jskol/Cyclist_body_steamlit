@@ -21,6 +21,7 @@ def create_SVG_path(Lower_arm:NDArray, Apex:NDArray, Upper_arm:NDArray,flip:bool
     if flip:
         ang_fin+= 2*np.pi
     diff=ang_fin-ang_init
+    #pick the shorter path
     diff = (diff + np.pi) % (2 * np.pi) - np.pi
 
     angles=np.linspace(ang_init,ang_init+diff,50)
