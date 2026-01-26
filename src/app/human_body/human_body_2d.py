@@ -161,7 +161,7 @@ class Human2D:
             #ang_temp=(ang_temp+np.pi)%(2.*np.pi)-np.pi
             true_ang=ang_temp + direction*(self.elbow_bend)*np.pi/180
             
-            print(f'True ang ={true_ang}')
+            #print(f'True ang ={true_ang}')
             self.elbow = np.array([
                 self.wrist[0]+self.l_arm_len*np.cos(true_ang),
                 #self.wrist[0]+self.l_arm_len*np.cos(true_ang),
