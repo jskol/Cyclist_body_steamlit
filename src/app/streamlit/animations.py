@@ -126,7 +126,7 @@ def animation_native(cyclist:Human2D,current_time:float=0,show_angles:bool=False
                 name=frame_name,
                 # Adding angles
                 layout=go.Layout(
-                    shapes=shapes_set#
+                    shapes=shapes_set
                 )
             )
 
@@ -171,7 +171,6 @@ def animation_native(cyclist:Human2D,current_time:float=0,show_angles:bool=False
                     {
                         "label": "Play",
                         "method": "animate",
-#                        "args": [frames_name*10, {
                         "args": [10*list(frames_dict.keys()), {
                             "frame": {"duration": 50, "redraw": True},
                             "fromcurrent": True,
