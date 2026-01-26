@@ -155,7 +155,7 @@ class Human2D:
 
             #update elbow
             diff2= self.shoulder- self.wrist
-            print(f'diff={diff2}')
+            #print(f'diff={diff2}')
             #pick the smaller angle from arctan
             ang_temp= np.arctan2(diff2[1],diff2[0])
             #ang_temp=(ang_temp+np.pi)%(2.*np.pi)-np.pi

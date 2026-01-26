@@ -40,7 +40,8 @@ from typing import Any
 def create_angle_areas(cyclist:Human2D,show_angles:bool)->list[Any]:
     '''
     Creates coloured areas of join angles with
-    color depending on the range of motion
+    color depending on the range of motion, if show_angles is False
+    then it returns an empty list
     '''
     def allowed_range(range_list:list[float],val:float):
         '''
@@ -54,7 +55,7 @@ def create_angle_areas(cyclist:Human2D,show_angles:bool)->list[Any]:
             
 
     knee_params=create_SVG_path(cyclist.ankle,cyclist.knee,cyclist.hip,cyclist.bike.side=='R')
-    hip_params=create_SVG_path(cyclist.knee,cyclist.hip,cyclist.shoulder,cyclist.bike.side=='L')
+    hip_params=create_SVG_path(cyclist.knee,cyclist.hip,cyclist.shoulder,cyclist.bike.side !='R') #Has to be opposite to knee
         
     if show_angles:
         shapes_set=[
@@ -113,7 +114,6 @@ def animation_native(cyclist:Human2D,current_time:float=0,show_angles:bool=False
         t = ((i+current_time) / number_of_frames) * 2 * np.pi+shift_start_ang
         frame_name=f'{int(i*360/number_of_frames )}'
         x, y, x_crank,y_crank = cyclist.animation_step_plotly(t) #update moving parts location
-        #Plotting angles
         
         shapes_set=create_angle_areas(cyclist,show_angles)
         frames_dict[frame_name]=\
