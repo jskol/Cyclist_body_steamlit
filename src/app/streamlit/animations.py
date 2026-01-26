@@ -181,7 +181,12 @@ def animation_native(cyclist:Human2D,current_time:float=0,show_angles:bool=False
                     {
                         "label": "Stop",
                         "method": "animate",
-                        "args": [[None], {"frame": {"duration": 0, "redraw": False}, "mode": "immediate"}]
+                        "args": [
+                                [None], 
+                                {
+                                    "frame": {"duration": 0, "redraw": False}, "mode": "immediate"
+                                }
+                            ]
                     }
                 ]
             }]
