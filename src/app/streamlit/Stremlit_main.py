@@ -44,7 +44,7 @@ with body_geo:
 
 # A helper dict for bike parts
 bike_parts={
-    'saddle_height': ['Saddle height [mm]',np.arange(600,850,5),750],
+    'saddle_height': ['Saddle height [mm]',np.arange(600,850,1),750],
     'stem_len':['Stem length [mm]',np.arange(80,170,5),100],
     'stem_angle':['Stem angle [mm]',np.arange(-25,25,1),-12 ],
     'speacers':['Stem specers [mm]',np.arange(0,35,5),0],
