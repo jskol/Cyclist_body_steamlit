@@ -8,7 +8,7 @@ from app.human_body.human_body_2d import Human2D
 
 def create_SVG_path(Lower_arm:NDArray, Apex:NDArray, Upper_arm:NDArray,flip:bool=False)->str:
     '''
-    According to GeminAI its better to approximat the arc 
+    According to GeminAI its better to approximate an arc 
     by a set of straight lines
     '''
     UA=Upper_arm-Apex
@@ -24,7 +24,7 @@ def create_SVG_path(Lower_arm:NDArray, Apex:NDArray, Upper_arm:NDArray,flip:bool
     #pick the shorter path
     diff = (diff + np.pi) % (2 * np.pi) - np.pi
 
-    angles=np.linspace(ang_init,ang_init+diff,50)
+    angles=np.linspace(ang_init,ang_init+diff,15)
     x=Apex[0]+arm*np.cos(angles)
     y=Apex[1]+arm*np.sin(angles)
 
@@ -34,7 +34,7 @@ def create_SVG_path(Lower_arm:NDArray, Apex:NDArray, Upper_arm:NDArray,flip:bool
     return path + 'Z',(diff*180/np.pi)
 
 from typing import Any
-def create_angle_areas(cyclist:Human2D,show_angles:bool)->list[Any]:
+def create_angle_areas(cyclist:Human2D,show_angles:bool)->tuple[list[Any],dict[str,list[float,NDArray]]]:
     def allowed_range(range_list:list[float],val:float):
         '''
         Helper function to highlight
@@ -72,7 +72,28 @@ def create_angle_areas(cyclist:Human2D,show_angles:bool)->list[Any]:
     else:
         shapes_set=[]
     
-    return shapes_set
+    return \
+        shapes_set,dict(
+            Hip= [np.abs(hip_params[1]),cyclist.hip],
+            Knee= [np.abs(knee_params[1]),cyclist.knee]
+        )
+
+def create_annotations_list(informations: dict[str,float]):
+    results=[]
+    shift=0
+    for k,v in informations.items():
+        results.append(
+            go.layout.Annotation(
+                x=1., y=1.-shift,
+                xref="paper", yref="paper",
+                text=f'{k} angle: {v[0]:.2f}',
+                showarrow=False,
+                font=dict(size=15)
+            )
+        )
+        shift +=0.1
+    return results
+
 
 def animation_native(cyclist:Human2D,current_time:float=0,show_angles:bool=False)->None:
     #plot a bike
@@ -98,6 +119,7 @@ def animation_native(cyclist:Human2D,current_time:float=0,show_angles:bool=False
         #Plotting angles
         
         shapes_set=create_angle_areas(cyclist,show_angles)
+        annotions_list=create_annotations_list(shapes_set[1])
         frames.append(
             go.Frame(
                 data=[
@@ -107,8 +129,9 @@ def animation_native(cyclist:Human2D,current_time:float=0,show_angles:bool=False
                 traces=[1,2], #substitute 2nd and 3rd entry (1st one is the bike (fixed))
                 name=frames_name[-1],
                 # Adding angles
-                layout=go.Layout(
-                    shapes=shapes_set#
+                layout=dict(
+                    shapes=shapes_set[0],
+                    annotations=annotions_list
                 )
             )
         )
@@ -118,7 +141,7 @@ def animation_native(cyclist:Human2D,current_time:float=0,show_angles:bool=False
             "label": f"{i}",
             "args": [[frames_name[-1]], {
                 "mode": "immediate",
-                "frame": {"duration": 0, "redraw": False},
+                "frame": {"duration": 0, "redraw": True},
             "transition": {"duration": 0}
             }]
         }
@@ -127,6 +150,7 @@ def animation_native(cyclist:Human2D,current_time:float=0,show_angles:bool=False
 
     x_init, y_init,x_crank_init,y_crank_init = cyclist.animation_step_plotly(0)
     shapes_set=create_angle_areas(cyclist,show_angles)
+    annotations_set=create_annotations_list(shapes_set[1])
     xrange=[x_min-10,x_max+10]
     fig = go.Figure(
         data=bike+[
@@ -134,7 +158,8 @@ def animation_native(cyclist:Human2D,current_time:float=0,show_angles:bool=False
             go.Scatter(x=x_init, y=y_init, mode="lines+markers",line=dict(color="#2606F9",width=5),marker=dict(size=10))
             ], 
         layout=go.Layout(
-            shapes=shapes_set,
+            shapes=shapes_set[0],
+            annotations=annotations_set,
             plot_bgcolor="#FBFAFA",
             showlegend=False,
             xaxis=dict(range=xrange, autorange=False, showgrid=False,fixedrange=True,visible=False),
@@ -177,7 +202,8 @@ def animation_native(cyclist:Human2D,current_time:float=0,show_angles:bool=False
                 go.Scatter(x=x_init, y=y_init, mode="lines+markers",line=dict(color="#2606F9",width=5),marker=dict(size=10))
                 ], 
             layout=go.Layout(
-                shapes=shapes_set,
+                shapes=shapes_set[0],
+                annotations=annotations_set,
                 plot_bgcolor="#FBFAFA",
                 showlegend=False,
                 xaxis=dict(range=xrange, autorange=False, showgrid=False,fixedrange=True,visible=False),

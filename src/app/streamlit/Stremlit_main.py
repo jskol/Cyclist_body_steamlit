@@ -89,7 +89,7 @@ with bike_geo:
 #animation page
 with animation:
     
-    st.title('Bikefit symulator') 
+    st.markdown("<h1 style='text-align: center;'>Bikefit symulator</h1>", unsafe_allow_html=True)
     #Initialize the bike and the rider
     bike=Bike(**bike_geo_dict,**frame_geometry_dict)
     bike.side='L'
