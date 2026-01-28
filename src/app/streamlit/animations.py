@@ -116,7 +116,7 @@ def animation_native(cyclist:Human2D,current_time:float=0,show_angles:bool=False
             "label": frame_name,
             "args": [[frame_name], {
                 "mode": "immediate",
-                "frame": {"duration": 0, "redraw": False},
+                "frame": {"duration": 0, "redraw": True},
             "transition": {"duration": 200}
             }]
         }
@@ -136,6 +136,7 @@ def animation_native(cyclist:Human2D,current_time:float=0,show_angles:bool=False
         x, y, x_crank,y_crank = cyclist.animation_step_plotly(t) #update moving parts location
         
         shapes_set=create_angle_areas(cyclist,show_angles)
+        annotations_list=create_annotations_list(shapes_set[1])
         frames_dict[frame_name]=\
             go.Frame(
                 data=[
@@ -147,7 +148,7 @@ def animation_native(cyclist:Human2D,current_time:float=0,show_angles:bool=False
                 # Adding angles
                 layout=dict(
                     shapes=shapes_set[0],
-                    annotations=annotions_list
+                    annotations=annotations_list
                 )
             )
 
@@ -168,7 +169,8 @@ def animation_native(cyclist:Human2D,current_time:float=0,show_angles:bool=False
     frame_layout_common=genearte_layout_dict(cyclist,bike_parts_loc['seat_loc'])
 
     #add shapes == joint angles if the switch is on
-    frame_layout_common["shapes"]=shapes_set
+    frame_layout_common["shapes"]=shapes_set[0]
+    frame_layout_common["annotations"]=annotations_list
 
 
     # Create initial frame: bike(static) + moving parts (crank + body)
@@ -205,7 +207,7 @@ def animation_native(cyclist:Human2D,current_time:float=0,show_angles:bool=False
                         "args": [
                                 [None], 
                                 {
-                                    "frame": {"duration": 0, "redraw": False}, "mode": "immediate"
+                                    "frame": {"duration": 0, "redraw": True}, "mode": "immediate"
                                 }
                             ]
                     }
