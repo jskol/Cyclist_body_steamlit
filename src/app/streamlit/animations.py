@@ -171,6 +171,7 @@ def animation_native(cyclist:Human2D,current_time:float=0,show_angles:bool=False
     #add shapes == joint angles if the switch is on
     frame_layout_common["shapes"]=shapes_set[0]
     frame_layout_common["annotations"]=annotations_list
+    frame_layout_common["margin"]=dict(t=0)
 
 
     # Create initial frame: bike(static) + moving parts (crank + body)
