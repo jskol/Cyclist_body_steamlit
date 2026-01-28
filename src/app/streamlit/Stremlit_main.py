@@ -32,9 +32,7 @@ with body_geo:
         for POI,vals in list(body_points.items())[:-2]:
             slider=st.select_slider(vals[0],options=[x for x in vals[1]],value=vals[2])
             body_dict[POI]=slider
-        #For testing add arm_len
-        #body_dict['arm_len']=body_dict['u_arm_len']+body_dict['l_arm_len']
-        ##
+
     for POI,vals in list(body_points.items())[-2:]:
         slider=st.select_slider(vals[0],options=[x for x in vals[1]],value=vals[2])
         body_dict[POI]=slider
@@ -44,7 +42,7 @@ with body_geo:
 
 # A helper dict for bike parts
 bike_parts={
-    'saddle_height': ['Saddle height [mm]',np.arange(600,850,5),750],
+    'saddle_height': ['Saddle height [mm]',np.arange(600,850,1),750],
     'stem_len':['Stem length [mm]',np.arange(80,170,5),100],
     'stem_angle':['Stem angle [mm]',np.arange(-25,25,1),-12 ],
     'speacers':['Stem specers [mm]',np.arange(0,35,5),0],
@@ -110,7 +108,6 @@ with animation:
             )
 
         #Sets the Frame of reference and sat up the rider on a bike
-        #st.text(f'bb location is {POC_dict['bb_loc']} ')
         POC_dict=bike.get_points_of_contact(np.zeros(2)) #fix the seat a (0.,0.) #cyclist.hip)
         cyclist.update_hip(POC_dict['seat_loc']+np.array([move_hips,0.]))
 
@@ -124,7 +121,6 @@ with animation:
         cyclist.update_shoulder()
 
 
-        #animation_refresh(cyclist,run_anim)
         animation_native(cyclist,show_angles=plot_angles)
     except Exception as e:
         st.text(f'Impossible fit due to {e}')    

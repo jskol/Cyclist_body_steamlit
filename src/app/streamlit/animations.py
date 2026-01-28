@@ -6,6 +6,9 @@ import plotly.graph_objects as go
 sys.path.append(os.path.join(os.getcwd(),'src'))
 from app.human_body.human_body_2d import Human2D
 
+# CREATE layout feautres common for all figures
+from app.streamlit.animations_layout import genearte_layout_dict 
+
 def create_SVG_path(Lower_arm:NDArray, Apex:NDArray, Upper_arm:NDArray,flip:bool=False)->str:
     '''
     According to GeminAI its better to approximate an arc 
@@ -34,7 +37,12 @@ def create_SVG_path(Lower_arm:NDArray, Apex:NDArray, Upper_arm:NDArray,flip:bool
     return path + 'Z',(diff*180/np.pi)
 
 from typing import Any
-def create_angle_areas(cyclist:Human2D,show_angles:bool)->tuple[list[Any],dict[str,list[float,NDArray]]]:
+def create_angle_areas(cyclist:Human2D,show_angles:bool)->list[Any]:
+    '''
+    Creates coloured areas of join angles with
+    color depending on the range of motion, if show_angles is False
+    then it returns an empty list
+    '''
     def allowed_range(range_list:list[float],val:float):
         '''
         Helper function to highlight
@@ -47,7 +55,7 @@ def create_angle_areas(cyclist:Human2D,show_angles:bool)->tuple[list[Any],dict[s
             
 
     knee_params=create_SVG_path(cyclist.ankle,cyclist.knee,cyclist.hip,cyclist.bike.side=='R')
-    hip_params=create_SVG_path(cyclist.knee,cyclist.hip,cyclist.shoulder,cyclist.bike.side=='L')
+    hip_params=create_SVG_path(cyclist.knee,cyclist.hip,cyclist.shoulder,cyclist.bike.side !='R') #Has to be opposite to knee
         
     if show_angles:
         shapes_set=[
@@ -77,7 +85,6 @@ def create_angle_areas(cyclist:Human2D,show_angles:bool)->tuple[list[Any],dict[s
             Hip= [np.abs(hip_params[1]),cyclist.hip],
             Knee= [np.abs(knee_params[1]),cyclist.knee]
         )
-
 def create_annotations_list(informations: dict[str,float]):
     results=[]
     shift=0
@@ -95,77 +102,87 @@ def create_annotations_list(informations: dict[str,float]):
     return results
 
 
-def animation_native(cyclist:Human2D,current_time:float=0,show_angles:bool=False)->None:
-    #plot a bike
-    bike_x,bike_y=cyclist.bike.plot_bike_plotly(np.array([0.,0.]))
-    bike=[
-        go.Scatter(x=bike_x,y=bike_y,mode="lines",line=dict(color='black'))
-    ]
-    #make the x_range span from fron wheel to rearwheel
-    x_arr=np.array(list(filter(lambda x: x is not None, bike_x))) #Remove Nones
-    y_arr=np.array(list(filter(lambda x: x is not None, bike_y))) #Remove Nones
-    x_max=np.amax(x_arr)
-    x_min=np.amin(x_arr)
-    y_min=np.amin(y_arr)
+def animation_native(cyclist:Human2D,current_time:float=0,show_angles:bool=False,number_of_frames:int=60)->None:
+    '''
+    Main function doing animation
+    '''
+    #Helper function alert
+    def gen_slider_step(frame_name:str):
+        '''
+        Helper funtion to generate slider steps
+        '''
+        step={
+            "method": "animate",
+            "label": frame_name,
+            "args": [[frame_name], {
+                "mode": "immediate",
+                "frame": {"duration": 0, "redraw": False},
+            "transition": {"duration": 200}
+            }]
+        }
+        return step
+    ##
     
-    frames_count = 50
-    frames = []
-    frames_name=[]
     slider_steps=[]
-    for i in range(frames_count):
-        t = ((i+current_time) / frames_count) * 2 * np.pi
-        frames_name.append(f'T={t}')
-        x, y, x_crank,y_crank = cyclist.animation_step_plotly(t)
-        #Plotting angles
+    frames_dict={}
+
+    for i in range(number_of_frames+1):
+        '''
+        Generate frames
+        '''
+        shift_start_ang=np.pi/2 # move by np.pi/2 to start from 12 o'clock
+        t = ((i+current_time) / number_of_frames) * 2 * np.pi+shift_start_ang
+        frame_name=f'{int(i*360/number_of_frames )}'
+        x, y, x_crank,y_crank = cyclist.animation_step_plotly(t) #update moving parts location
         
         shapes_set=create_angle_areas(cyclist,show_angles)
-        annotions_list=create_annotations_list(shapes_set[1])
-        frames.append(
+        frames_dict[frame_name]=\
             go.Frame(
                 data=[
                     go.Scatter(x=x_crank, y=y_crank, mode="lines+markers",line=dict(color='black')),
                     go.Scatter(x=x, y=y, mode="lines+markers",line=dict(color="#2606F9",width=5))
                 ],
-                traces=[1,2], #substitute 2nd and 3rd entry (1st one is the bike (fixed))
-                name=frames_name[-1],
+                traces=[1,2], #substitute 2nd and 3rd entry (1st one is the bike (fixed) -iniiated before the first frame)
+                name=frame_name,
                 # Adding angles
                 layout=dict(
                     shapes=shapes_set[0],
                     annotations=annotions_list
                 )
             )
-        )
+
         #needed for sliders
-        step = {
-            "method": "animate",
-            "label": f"{i}",
-            "args": [[frames_name[-1]], {
-                "mode": "immediate",
-                "frame": {"duration": 0, "redraw": True},
-            "transition": {"duration": 0}
-            }]
-        }
-        slider_steps.append(step)
+        slider_steps.append(gen_slider_step(frame_name))
         ## Done
 
-    x_init, y_init,x_crank_init,y_crank_init = cyclist.animation_step_plotly(0)
-    shapes_set=create_angle_areas(cyclist,show_angles)
-    annotations_set=create_annotations_list(shapes_set[1])
-    xrange=[x_min-10,x_max+10]
-    fig = go.Figure(
-        data=bike+[
+    
+
+    #Get the bike without cranks -> static objects 
+    bike_parts_loc=cyclist.bike.get_points_of_contact()
+    bike_x,bike_y=cyclist.bike.plot_bike_plotly(bike_parts_loc['seat_loc'])
+    bike=[
+        go.Scatter(x=bike_x,y=bike_y,mode="lines",line=dict(color='black'))
+    ]
+
+    #Common layout features
+    frame_layout_common=genearte_layout_dict(cyclist,bike_parts_loc['seat_loc'])
+
+    #add shapes == joint angles if the switch is on
+    frame_layout_common["shapes"]=shapes_set
+
+
+    # Create initial frame: bike(static) + moving parts (crank + body)
+    x_init, y_init,x_crank_init,y_crank_init = cyclist.animation_step_plotly(np.pi/2)
+    init_frame_data= bike+[
             go.Scatter(x=x_crank_init, y=y_crank_init, mode="lines+markers",line=dict(color='black')),
             go.Scatter(x=x_init, y=y_init, mode="lines+markers",line=dict(color="#2606F9",width=5),marker=dict(size=10))
-            ], 
+            ]
+
+    fig = go.Figure(
+        data=init_frame_data,
         layout=go.Layout(
-            shapes=shapes_set[0],
-            annotations=annotations_set,
-            plot_bgcolor="#FBFAFA",
-            showlegend=False,
-            xaxis=dict(range=xrange, autorange=False, showgrid=False,fixedrange=True,visible=False),
-            yaxis=dict(range=[y_min*1.01,np.amax([cyclist.shoulder[1],cyclist.hip[1]])+100],
-                        autorange=False, showgrid=False,scaleanchor="x",scaleratio=1,fixedrange=True,visible=False),
-            updatemenus=[{
+            **frame_layout_common,
+            updatemenus=[{ #add buttos to have an animation
                 "type": "buttons",
                 "direction" :"left",
                 "x":0.5,"y":-0.1,
@@ -175,7 +192,7 @@ def animation_native(cyclist:Human2D,current_time:float=0,show_angles:bool=False
                     {
                         "label": "Play",
                         "method": "animate",
-                        "args": [frames_name*10, {
+                        "args": [10*list(frames_dict.keys()), {
                             "frame": {"duration": 50, "redraw": True},
                             "fromcurrent": True,
                             "transition": {"duration": 0},
@@ -185,35 +202,33 @@ def animation_native(cyclist:Human2D,current_time:float=0,show_angles:bool=False
                     {
                         "label": "Stop",
                         "method": "animate",
-                        "args": [[None], {"frame": {"duration": 0, "redraw": False}, "mode": "immediate"}]
+                        "args": [
+                                [None], 
+                                {
+                                    "frame": {"duration": 0, "redraw": False}, "mode": "immediate"
+                                }
+                            ]
                     }
                 ]
             }]
         ),
-        frames=frames
+        frames=list(frames_dict.values())
     )
     col1,col2=st.columns([1,1])
     with col1:
         st.plotly_chart(fig)
     with col2: 
         fig_slider=go.Figure(
-            data=bike+[
-                go.Scatter(x=x_crank_init, y=y_crank_init, mode="lines+markers",line=dict(color='black')),
-                go.Scatter(x=x_init, y=y_init, mode="lines+markers",line=dict(color="#2606F9",width=5),marker=dict(size=10))
-                ], 
+            data=init_frame_data, 
             layout=go.Layout(
-                shapes=shapes_set[0],
-                annotations=annotations_set,
-                plot_bgcolor="#FBFAFA",
-                showlegend=False,
-                xaxis=dict(range=xrange, autorange=False, showgrid=False,fixedrange=True,visible=False),
-                yaxis=dict(range=[y_min*1.01, np.amax([cyclist.shoulder[1],cyclist.hip[1]])+100], autorange=False, showgrid=False,scaleanchor="x",scaleratio=1,fixedrange=True,visible=False),
+                **frame_layout_common,
+                #Add slider functionality
                 sliders=[{
                     "active": 0,
-                    "currentvalue": {"prefix": "Time stamp"},
+                    "currentvalue": {"prefix": "Angle "},
                     "steps": slider_steps
                 }]
             ),
-            frames=frames
+            frames=list(frames_dict.values())
         )
         st.plotly_chart(fig_slider)
