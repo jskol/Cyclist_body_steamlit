@@ -17,6 +17,7 @@ class Human2D:
     # with 3 points of contact fixed
     hip:NDArray=None # Fixed ->saddle
     foot:NDArray=None # Fixed->pedal
+    heel:NDArray=None
     wrist:NDArray=None #fixed ->bars
     
     #Semi-adjustable 
@@ -42,6 +43,7 @@ class Human2D:
     foot_len:float=None
     foot_angle:float=None
     ankle_mobility:float=5. # +- angle range (in degrees) of ankling
+    ankle_height:float=50
     cleat_set_back:float=0
 
     bike: Bike=field(default_factory=Bike)
@@ -63,16 +65,26 @@ class Human2D:
         
         foot_angle_temp=((self.foot_angle+ang_shift)*np.pi/180) 
         
-        
         self.foot=np.array([
             new_pos[0]+direction*self.cleat_set_back*np.cos(foot_angle_temp),
             new_pos[1]-self.cleat_set_back*np.sin(foot_angle_temp)            
         ])
-        ankle_pos=np.array([
-            new_pos[0]-direction*(self.foot_len-self.cleat_set_back)*np.cos(foot_angle_temp),
-            new_pos[1]+(self.foot_len-self.cleat_set_back)*np.sin(foot_angle_temp)
+        
+        self.heel=self.foot+ np.array([
+            -direction*self.foot_len*np.cos(foot_angle_temp),
+            self.foot_len*np.sin(foot_angle_temp)
         ])
-        self.ankle=ankle_pos 
+
+        # new ankle approach
+        upper_foot=np.sqrt(self.foot_len**2 + self.ankle_height**2)
+        foot_angle_temp += np.arctan2(self.ankle_height,self.foot_len)
+        
+        self.ankle=self.foot+ np.array([
+            -direction*upper_foot*np.cos(foot_angle_temp),
+            upper_foot*np.sin(foot_angle_temp)
+        ])
+
+        #self.ankle=ankle_pos 
 
 
     # Update adjustable joints
@@ -228,6 +240,10 @@ class Human2D:
         ])
         x.extend([self.foot[0],self.ankle[0],self.knee[0],self.hip[0],self.shoulder[0],self.elbow[0],self.wrist[0]])
         y.extend([self.foot[1],self.ankle[1],self.knee[1],self.hip[1],self.shoulder[1],self.elbow[1],self.wrist[1]])
+        
+        ## New
+        x.extend([None,self.ankle[0],self.heel[0],self.foot[0],None])
+        y.extend([None,self.ankle[1],self.heel[1],self.foot[1],None])
         
         x_crank.extend([spindle_loc[0],bb_loc[0]])
         y_crank.extend([spindle_loc[1],bb_loc[1]])

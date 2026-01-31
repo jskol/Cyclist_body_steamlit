@@ -21,19 +21,27 @@ body_points={
     'u_leg_len':['Upper leg lenght [mm]',np.arange(200,1000,5),420,None],
     'l_leg_len':['Lower leg lenght [mm]',np.arange(200,1000,5),480,None],
     'foot_len':['Foot length [mm]',np.arange(200,500,5),285,None],
+    'ankle_height':['Foot height [mm]', np.arange(10,150,1),50,
+                    'Distance from the ground to the ankle'],
     'elbow_bend':['Elbow bend [deg]',np.arange(0,120,1),0,
                   '0 angle means arms are fully extended'],
     'foot_angle':['Foot angle [deg]', np.arange(-45,45,1),15,
                   "Angle your foot makes with the ground\
                       when the pedal is at 6 o' clock"
                     ],
+    'ankle_mobility':[f'Set your ankling range +- [deg]',
+                    np.arange(0,45,1),5,
+                    'Maximal angular deviation (in deg)\n \
+                    from your ankle angle at the bottom\
+                    of the pedal stroke']
+    
 }
 # Define body geometry from sliders 
 with body_geo:
     body_dict={}
     st.header('Body geometry')
     with st.expander('Body dimensions'):
-        for POI,vals in list(body_points.items())[:-2]:
+        for POI,vals in list(body_points.items())[:-3]:
             slider=st.select_slider(
                     vals[0],
                     options=[x for x in vals[1]],
@@ -42,7 +50,7 @@ with body_geo:
                 )
             body_dict[POI]=slider
 
-    for POI,vals in list(body_points.items())[-2:]:
+    for POI,vals in list(body_points.items())[-3:]:
         slider=st.select_slider(
                     vals[0],
                     options=[x for x in vals[1]],
@@ -50,6 +58,7 @@ with body_geo:
                     help=vals[3]
             )
         body_dict[POI]=slider
+    
     foot_size=body_dict['foot_len']
     cleat_SB=st.select_slider(
         f'Set your cleat setback [mm]',
@@ -58,18 +67,7 @@ with body_geo:
         help='Measured from toes to the center of the cleat'
         )
     body_dict['cleat_set_back']=cleat_SB
-
-    ankling=st.select_slider(
-        f'Set your ankling range +- [deg]',
-        options=np.arange(0,45,1),
-        value=5,
-        help='\
-            Maximal angular deviation (in deg)\n \
-            from your ankle angle at the bottom\
-            of the pedal stroke'
-        )
-    body_dict['ankle_mobility']=ankling
-
+    
 # A helper dict for bike parts
 
  
