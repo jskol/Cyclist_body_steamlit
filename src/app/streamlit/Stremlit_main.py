@@ -87,6 +87,8 @@ with bike_geo:
     st.header('Bike geometry')
     
     with st.expander('Adjust Frame Geometry'):
+        link_to_geo_charts='https://geometrygeeks.bike/'
+        st.markdown(f"Details of your bike can be (probably) found at [here]({link_to_geo_charts}) ")
         for k,v in frame_geometry.items():
             slider=st.select_slider(v[0],options=[x for x in v[1]],value=v[2])
             frame_geometry_dict[k]=slider
