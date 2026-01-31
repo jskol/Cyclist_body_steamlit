@@ -89,16 +89,20 @@ def create_annotations_list(informations: dict[str,float]):
     results=[]
     shift=0
     for k,v in informations.items():
+        text=f'{k} angle: {v[0]:.2f}'
+        if k == 'Knee':
+            text += f'({(180-v[0]):.2f})'
+            
         results.append(
             go.layout.Annotation(
-                x=1., y=1.-shift,
+                x=1, y=1.-shift,
                 xref="paper", yref="paper",
-                text=f'{k} angle: {v[0]:.2f}',
+                text=text,
                 showarrow=False,
                 font=dict(size=15)
             )
         )
-        shift +=0.1
+        shift +=0.075
     return results
 
 

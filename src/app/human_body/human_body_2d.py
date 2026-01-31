@@ -41,6 +41,7 @@ class Human2D:
     l_leg_len: float =None
     foot_len:float=None
     foot_angle:float=None
+    ankle_mobility:float=5. # +- angle range (in degrees) of ankling
     cleat_set_back:float=0
 
     bike: Bike=field(default_factory=Bike)
@@ -53,20 +54,23 @@ class Human2D:
     def update_wrist(self, new_pos:NDArray)->None:
         self.wrist=new_pos
 
-    def update_foot(self, new_pos:NDArray)->None:
+    def update_foot(self, new_pos:NDArray, ang_shift:float=0.)->None:
         '''
-        new_pos is the position of the pedal spindel
+        new_pos is the position of the pedal spindle
         so one has to include cleat_set back
         '''
         direction=self.bike.side_to_sign()
-
+        
+        foot_angle_temp=((self.foot_angle+ang_shift)*np.pi/180) 
+        
+        
         self.foot=np.array([
-            new_pos[0]+direction*self.cleat_set_back*np.cos(self.foot_angle*np.pi/180.),
-            new_pos[1]-self.cleat_set_back*np.sin(self.foot_angle*np.pi/180.)            
+            new_pos[0]+direction*self.cleat_set_back*np.cos(foot_angle_temp),
+            new_pos[1]-self.cleat_set_back*np.sin(foot_angle_temp)            
         ])
         ankle_pos=np.array([
-            new_pos[0]-direction*(self.foot_len-self.cleat_set_back)*np.cos(self.foot_angle*np.pi/180.),
-            new_pos[1]+(self.foot_len-self.cleat_set_back)*np.sin(self.foot_angle*np.pi/180.)
+            new_pos[0]-direction*(self.foot_len-self.cleat_set_back)*np.cos(foot_angle_temp),
+            new_pos[1]+(self.foot_len-self.cleat_set_back)*np.sin(foot_angle_temp)
         ])
         self.ankle=ankle_pos 
 
@@ -155,7 +159,6 @@ class Human2D:
 
             #update elbow
             diff2= self.shoulder- self.wrist
-            #print(f'diff={diff2}')
             #pick the smaller angle from arctan
             ang_temp= np.arctan2(diff2[1],diff2[0])
             #ang_temp=(ang_temp+np.pi)%(2.*np.pi)-np.pi
@@ -164,7 +167,6 @@ class Human2D:
             #print(f'True ang ={true_ang}')
             self.elbow = np.array([
                 self.wrist[0]+self.l_arm_len*np.cos(true_ang),
-                #self.wrist[0]+self.l_arm_len*np.cos(true_ang),
                 self.wrist[1]+self.l_arm_len*np.sin(true_ang)
             ])
 
@@ -179,11 +181,29 @@ class Human2D:
         crank_len=self.bike.crank_len
         bb_loc=self.bike.calc_bb_loc(saddle_loc)
         direction=self.bike.side_to_sign()
-        self.update_foot(np.array([
+        #Here I should first update the foot angle
+        #before I do update of the foot ->ankle
+        # and do the update knee at the end
+        # The idea is to have ( according to Gemini)
+        # 20deg at the top
+        # around 5-10 in the push (~3 o'clock)
+        # 10-20 at the bottom -> depending on the user input
+        # 15-25 around 9 o'clock
+        # So we need a trigonometric function of time
+        # that will return 
+        # to the initial state at the bottom of
+        # the pedal stroke
+        # Decided to give this additinal angle to 
+        # class method update_foot
+        
+        self.update_foot(
+            np.array([
             bb_loc[0] - direction* crank_len * np.cos(t),
             bb_loc[1] + crank_len * np.sin(t)
-        ])
+            ]),
+            self.ankle_mobility*np.cos(t)
         )
+        
         self.update_knee()      
 
     def animation_step_plotly(self, frame)->tuple[list[float],list[float]]:
@@ -201,8 +221,10 @@ class Human2D:
         # The cleat set-back has to be included
         direction=self.bike.side_to_sign()
         spindle_loc=np.array([
-            self.foot[0]-direction*self.cleat_set_back*np.cos(self.foot_angle*np.pi/180),
-            self.foot[1]+self.cleat_set_back*np.sin(self.foot_angle*np.pi/180)
+            bb_loc[0] - direction* self.bike.crank_len * np.cos(frame),
+            bb_loc[1] + self.bike.crank_len * np.sin(frame)
+            #self.foot[0]-direction*self.cleat_set_back*np.cos(self.foot_angle*np.pi/180),
+            #self.foot[1]+self.cleat_set_back*np.sin(self.foot_angle*np.pi/180)
         ])
         x.extend([self.foot[0],self.ankle[0],self.knee[0],self.hip[0],self.shoulder[0],self.elbow[0],self.wrist[0]])
         y.extend([self.foot[1],self.ankle[1],self.knee[1],self.hip[1],self.shoulder[1],self.elbow[1],self.wrist[1]])
