@@ -18,6 +18,8 @@ class Bike:
     wheel_diameter:float=622
     wheel_base:float=991
     saddle_set_back:float=0
+    saddle_lenght:float=180
+    saddle_tilt:float=0
     bb_drop:float=72
     stack:float=555
     head_tube_len:float=170
@@ -26,6 +28,8 @@ class Bike:
     speacers:float=10
     stem_angle:float=-12
     stem_len:float=110
+    
+    
     side:str='L' # optionally can be right 'R'
 
     #helper-function for flipping the picture
@@ -158,6 +162,22 @@ class Bike:
         y.extend([None,steerer[1]+self.speacers/np.sin(self.head_tube_angle*np.pi/180),\
                 POC_dict['hoods_loc'][1],None])
 
+        #seat
+        seat_temp=0.5*self.saddle_lenght+self.saddle_set_back
+        x.extend([None,
+                  saddle_loc[0]+sign*(0.5*self.saddle_lenght-self.saddle_set_back)\
+                      *np.cos(self.saddle_tilt*np.pi/180),
+                  saddle_loc[0]-sign*(0.5*self.saddle_lenght+self.saddle_set_back)
+                  *np.cos(self.saddle_tilt*np.pi/180),
+                  None
+                ])
+        y.extend([None,
+                  saddle_loc[0]+(0.5*self.saddle_lenght-self.saddle_set_back)\
+                      *np.sin(self.saddle_tilt*np.pi/180),
+                  saddle_loc[0]-(0.5*self.saddle_lenght+self.saddle_set_back)\
+                      *np.sin(self.saddle_tilt*np.pi/180),
+                  None
+                ])
 
         return x,y
 

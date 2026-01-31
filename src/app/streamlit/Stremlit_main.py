@@ -109,7 +109,25 @@ with bike_geo:
             options=np.arange(600,850,1),
             value=750
         )
-        move_hips=st.select_slider(f'Setback [mm]',options=[x for x in np.arange(-150,150,5)],value=0) 
+        bike_geo_dict['saddle_lenght']=st.select_slider(
+            'Saddle length',
+            options=np.arange(120,300,5),
+            value=150
+        )
+        sd_len=bike_geo_dict['saddle_lenght']
+        bike_geo_dict['saddle_tilt']=st.select_slider(
+            'Saddle tilt [deg]',
+            options=np.arange(-20,20,1),
+            value=0
+        )
+        sd_range=np.linspace(-0.5*sd_len,0.5*sd_len,20)
+        move_hips=st.select_slider(
+            f'Setback [mm]',
+            options=[x for x in sd_range],
+            value=sd_range[len(sd_range)//2],
+            format_func= lambda x: f'{x:.2f}'
+            )
+        bike_geo_dict['saddle_set_back']=move_hips
 
     with st.expander('Cockpit'):
         cockpit_dict={
@@ -152,7 +170,15 @@ with animation:
 
         #Sets the Frame of reference and sat up the rider on a bike
         POC_dict=bike.get_points_of_contact(np.zeros(2)) #fix the seat a (0.,0.) #cyclist.hip)
-        cyclist.update_hip(POC_dict['seat_loc']+np.array([move_hips,0.]))
+        #seat_angle
+        seat_angle_temp=cyclist.bike.saddle_tilt*np.pi/180
+        sign=cyclist.bike.side_to_sign()
+        cyclist.update_hip(
+            POC_dict['seat_loc']\
+                +np.array([
+                    -sign*move_hips*np.cos(seat_angle_temp),
+                    -move_hips*np.sin(seat_angle_temp)
+                    ]))
 
         # sets the initial positions
         foot_on_the_pedal=POC_dict['bb_loc']
