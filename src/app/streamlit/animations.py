@@ -99,7 +99,7 @@ def create_annotations_list(informations: dict[str,float]):
                 xref="paper", yref="paper",
                 text=text,
                 showarrow=False,
-                font=dict(size=15)
+                font=dict(size=13)
             )
         )
         shift +=0.075

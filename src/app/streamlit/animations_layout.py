@@ -16,7 +16,7 @@ def genearte_layout_dict(cyclist:Human2D,seat_loc:NDArray)->dict[str, bool| list
 
     
     return {
-        "plot_bgcolor":"#FBFAFA",
+        "plot_bgcolor":"#f8f8ff",
         "showlegend":False,
         "xaxis": dict(
             range=[x_min-10,x_max+10], 

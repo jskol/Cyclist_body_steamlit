@@ -10,7 +10,8 @@ from app.streamlit.animations import animation_native
 import plotly.graph_objects as go
 #lets try a 3 column structure
 st.set_page_config(layout="wide")
-body_geo,animation,bike_geo=st.columns([0.2,0.6,0.2])
+st.markdown("<h1 style='text-align: center;'>Bikefit symulator</h1>", unsafe_allow_html=True)
+body_geo,animation,bike_geo=st.columns([0.2,0.6,0.2],border=True)
 
 
 # A helper dict for body parts
@@ -148,7 +149,7 @@ with bike_geo:
 #animation page
 with animation:
     
-    st.markdown("<h1 style='text-align: center;'>Bikefit symulator</h1>", unsafe_allow_html=True)
+   
     #Initialize the bike and the rider
     bike=Bike(**bike_geo_dict,**frame_geometry_dict)
     bike.side='L'
