@@ -43,7 +43,7 @@ class Human2D:
     foot_len:float=None
     foot_angle:float=None
     ankle_mobility:float=5. # +- angle range (in degrees) of ankling
-    ankle_height:float=50
+    ankle_height:float=90
     cleat_set_back:float=0
 
     bike: Bike=field(default_factory=Bike)
@@ -76,7 +76,7 @@ class Human2D:
         ])
 
         # new ankle approach
-        upper_foot=np.sqrt(self.foot_len**2 + self.ankle_height**2)
+        upper_foot=np.sqrt((self.foot_len-50)**2 + self.ankle_height**2)
         foot_angle_temp += np.arctan2(self.ankle_height,self.foot_len)
         
         self.ankle=self.foot+ np.array([

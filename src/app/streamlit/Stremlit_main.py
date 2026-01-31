@@ -19,7 +19,7 @@ body_points={
     'u_arm_len':['Upper Arm lenght[mm]',np.arange(100,500,5),250,None],
     'l_arm_len':['Lower Arm lenght [mm]',np.arange(100,500,5),250,None],
     'u_leg_len':['Upper leg lenght [mm]',np.arange(200,1000,5),420,None],
-    'l_leg_len':['Lower leg lenght [mm]',np.arange(200,1000,5),480,None],
+    'l_leg_len':['Lower leg lenght [mm]',np.arange(200,1000,5),400,None],
     'foot_len':['Foot length [mm]',np.arange(200,500,5),285,None],
     'ankle_height':['Foot height [mm]', np.arange(10,150,1),50,
                     'Distance from the ground to the ankle'],
@@ -67,7 +67,7 @@ with body_geo:
         help='Measured from toes to the center of the cleat'
         )
     body_dict['cleat_set_back']=cleat_SB
-    
+
 # A helper dict for bike parts
 
  
