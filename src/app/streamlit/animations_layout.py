@@ -4,7 +4,9 @@ from numpy.typing import NDArray
 
 sys.path.append(os.path.join(os.getcwd(),'src'))
 from app.human_body.human_body_2d import Human2D
-def genearte_layout_dict(cyclist:Human2D,seat_loc:NDArray)->dict[str, bool| list[float]|int|str]:
+
+
+def generate_layout_dict(cyclist:Human2D,seat_loc:NDArray)->dict[str, bool| list[float]|int|str]:
     
     bike_x,bike_y=cyclist.bike.plot_bike_plotly(seat_loc)
     #make the x_range span from fron wheel to rearwheel
@@ -33,3 +35,26 @@ def genearte_layout_dict(cyclist:Human2D,seat_loc:NDArray)->dict[str, bool| list
             fixedrange=True,
             visible=False)
     }
+
+def movie_buttons(frames_dict,num_of_repetion=10):
+    play_button={
+                    "label": "Play",
+                    "method": "animate",
+                    "args": [num_of_repetion*list(frames_dict.keys()), {
+                    "frame": {"duration": 50, "redraw": True},
+                    "fromcurrent": True,
+                    "transition": {"duration": 0},
+                    "loop": True
+                            }]
+                }
+    stop_button={
+                "label": "Stop",
+                "method": "animate",
+                "args": [
+                        [None], 
+                        {
+                            "frame": {"duration": 0, "redraw": True}, "mode": "immediate"
+                        }
+                    ]
+            }
+    return [play_button,stop_button]

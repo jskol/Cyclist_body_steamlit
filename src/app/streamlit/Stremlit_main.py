@@ -146,6 +146,10 @@ with bike_geo:
         value=165
         )
 
+
+
+
+
 #animation page
 with animation:
     
@@ -191,6 +195,10 @@ with animation:
         cyclist.update_shoulder()
 
 
-        animation_native(cyclist,show_angles=plot_angles)
+        #Define colorsceme of the plot
+        from app.streamlit.animation_details_class import AnimationSettings
+        animation_settings=AnimationSettings(show_angles=plot_angles)
+
+        animation_native(cyclist,animation_settings)
     except Exception as e:
         st.text(f'Impossible fit due to {e}')    

@@ -28,7 +28,7 @@ class Human2D:
     knee:NDArray =None
     shoulder:NDArray =None
     #fixed lengts
-    arm_len: float =None
+    #arm_len: float =None
     
     # for future improvements #
     u_arm_len:float=None
@@ -87,7 +87,7 @@ class Human2D:
         #self.ankle=ankle_pos 
 
 
-    # Update adjustable joints
+    # Update adjustable joints -> Knee, ankle, shoulder,elbow
     def update_knee(self):
         '''
         update_knee recalulates the position
@@ -186,7 +186,7 @@ class Human2D:
     #For animations
     def start_pedaling(self,frame,saddle_loc:NDArray=np.zeros(2))->None:
         '''
-        Helper function intoruding dynamics->pedalling
+        Helper function introducing dynamics->pedalling motion
         as a function of frame=time
         '''
         t = frame / 1.0
@@ -213,7 +213,7 @@ class Human2D:
             bb_loc[0] - direction* crank_len * np.cos(t),
             bb_loc[1] + crank_len * np.sin(t)
             ]),
-            self.ankle_mobility*np.cos(t)
+            self.ankle_mobility*np.cos(t) # Here is  hidden the ankling mechanics 
         )
         
         self.update_knee()      
@@ -221,6 +221,8 @@ class Human2D:
     def animation_step_plotly(self, frame)->tuple[list[float],list[float]]:
         '''
         return position of body parts and crankarm
+        in body position first 4 points determine the
+        foot outline !!
         '''
         x,y=[],[]
         x_crank,y_crank=[],[]
@@ -235,16 +237,11 @@ class Human2D:
         spindle_loc=np.array([
             bb_loc[0] - direction* self.bike.crank_len * np.cos(frame),
             bb_loc[1] + self.bike.crank_len * np.sin(frame)
-            #self.foot[0]-direction*self.cleat_set_back*np.cos(self.foot_angle*np.pi/180),
-            #self.foot[1]+self.cleat_set_back*np.sin(self.foot_angle*np.pi/180)
         ])
-        x.extend([self.foot[0],self.ankle[0],self.knee[0],self.hip[0],self.shoulder[0],self.elbow[0],self.wrist[0]])
-        y.extend([self.foot[1],self.ankle[1],self.knee[1],self.hip[1],self.shoulder[1],self.elbow[1],self.wrist[1]])
-        
-        ## New
-        x.extend([None,self.ankle[0],self.heel[0],self.foot[0],None])
-        y.extend([None,self.ankle[1],self.heel[1],self.foot[1],None])
-        
+
+        x.extend([self.ankle[0],self.foot[0],self.heel[0],self.ankle[0],self.knee[0],self.hip[0],self.shoulder[0],self.elbow[0],self.wrist[0]])
+        y.extend([self.ankle[1],self.foot[1],self.heel[1],self.ankle[1],self.knee[1],self.hip[1],self.shoulder[1],self.elbow[1],self.wrist[1]])
+                
         x_crank.extend([spindle_loc[0],bb_loc[0]])
         y_crank.extend([spindle_loc[1],bb_loc[1]])
 

@@ -7,7 +7,9 @@ sys.path.append(os.path.join(os.getcwd(),'src'))
 from app.human_body.human_body_2d import Human2D
 
 # CREATE layout feautres common for all figures
-from app.streamlit.animations_layout import genearte_layout_dict 
+from app.streamlit.animations_layout import generate_layout_dict,movie_buttons
+from app.streamlit.animation_details_class import AnimationSettings 
+from typing import Any
 
 def create_SVG_path(Lower_arm:NDArray, Apex:NDArray, Upper_arm:NDArray,flip:bool=False)->str:
     '''
@@ -36,8 +38,7 @@ def create_SVG_path(Lower_arm:NDArray, Apex:NDArray, Upper_arm:NDArray,flip:bool
         path += f'L {x_v},{y_v} '
     return path + 'Z',(diff*180/np.pi)
 
-from typing import Any
-def create_angle_areas(cyclist:Human2D,show_angles:bool)->list[Any]:
+def create_angle_areas(cyclist:Human2D,show_angles:bool,)->list[Any]:
     '''
     Creates coloured areas of join angles with
     color depending on the range of motion, if show_angles is False
@@ -56,7 +57,7 @@ def create_angle_areas(cyclist:Human2D,show_angles:bool)->list[Any]:
 
     knee_params=create_SVG_path(cyclist.ankle,cyclist.knee,cyclist.hip,cyclist.bike.side=='R')
     hip_params=create_SVG_path(cyclist.knee,cyclist.hip,cyclist.shoulder,cyclist.bike.side !='R') #Has to be opposite to knee
-        
+    shapes_set=[]
     if show_angles:
         shapes_set=[
             #knee angle
@@ -85,6 +86,7 @@ def create_angle_areas(cyclist:Human2D,show_angles:bool)->list[Any]:
             Hip= [np.abs(hip_params[1]),cyclist.hip],
             Knee= [np.abs(knee_params[1]),cyclist.knee]
         )
+
 def create_annotations_list(informations: dict[str,float]):
     results=[]
     shift=0
@@ -106,11 +108,13 @@ def create_annotations_list(informations: dict[str,float]):
     return results
 
 
-def animation_native(cyclist:Human2D,current_time:float=0,show_angles:bool=False,number_of_frames:int=60)->None:
+
+def animation_native(cyclist:Human2D,layout_settings:AnimationSettings=AnimationSettings())->None:
     '''
     Main function doing animation
     '''
     #Helper function alert
+    
     def gen_slider_step(frame_name:str):
         '''
         Helper funtion to generate slider steps
@@ -129,7 +133,11 @@ def animation_native(cyclist:Human2D,current_time:float=0,show_angles:bool=False
     
     slider_steps=[]
     frames_dict={}
-
+    number_of_frames=layout_settings.number_of_frames
+    current_time=0
+    show_angles=layout_settings.show_angles
+    human_color=layout_settings.color_scheme['Human']
+    joint_color=layout_settings.color_scheme['Joints']
     for i in range(number_of_frames+1):
         '''
         Generate frames
@@ -138,29 +146,31 @@ def animation_native(cyclist:Human2D,current_time:float=0,show_angles:bool=False
         t = ((i+current_time) / number_of_frames) * 2 * np.pi+shift_start_ang
         frame_name=f'{int(i*360/number_of_frames )}'
         x, y, x_crank,y_crank = cyclist.animation_step_plotly(t) #update moving parts location
-        
-        shapes_set=create_angle_areas(cyclist,show_angles)
+
+        # Add angles (optional)
+        shapes_set=create_angle_areas(cyclist,show_angles) # retunrs tuple of angles and annotations
+        shapes= shapes_set[0]
         annotations_list=create_annotations_list(shapes_set[1])
+        
         frames_dict[frame_name]=\
             go.Frame(
                 data=[
                     go.Scatter(x=x_crank, y=y_crank, mode="lines+markers",line=dict(color='black')),
-                    go.Scatter(x=x, y=y, mode="lines+markers",line=dict(color="#2606F9",width=5))
+                    go.Scatter(x=x[:4], y=y[:4], mode="lines",line=dict(color=human_color),fill='toself',fillcolor=human_color), # Foot
+                    go.Scatter(x=x[3:], y=y[3:], mode="lines+markers",line=dict(color=human_color,width=5)), # Rest of the body
+                    go.Scatter(x=x[3:], y=y[3:], mode="markers",line=dict(color=joint_color,width=5))
                 ],
-                traces=[1,2], #substitute 2nd and 3rd entry (1st one is the bike (fixed) -iniiated before the first frame)
+                traces=[1,2,3,4], #substitute 2nd and 3rd entry (1st one is the bike (fixed) -iniiated before the first frame)
                 name=frame_name,
-                # Adding angles
                 layout=dict(
-                    shapes=shapes_set[0],
-                    annotations=annotations_list
+                    shapes=shapes, # colored or not the joint angles
+                    annotations=annotations_list # information about the angles
                 )
             )
 
         #needed for sliders
         slider_steps.append(gen_slider_step(frame_name))
         ## Done
-
-    
 
     #Get the bike without cranks -> static objects 
     bike_parts_loc=cyclist.bike.get_points_of_contact()
@@ -170,7 +180,7 @@ def animation_native(cyclist:Human2D,current_time:float=0,show_angles:bool=False
     ]
 
     #Common layout features
-    frame_layout_common=genearte_layout_dict(cyclist,bike_parts_loc['seat_loc'])
+    frame_layout_common=generate_layout_dict(cyclist,bike_parts_loc['seat_loc'])
 
     #add shapes == joint angles if the switch is on
     frame_layout_common["shapes"]=shapes_set[0]
@@ -182,7 +192,9 @@ def animation_native(cyclist:Human2D,current_time:float=0,show_angles:bool=False
     x_init, y_init,x_crank_init,y_crank_init = cyclist.animation_step_plotly(np.pi/2)
     init_frame_data= bike+[
             go.Scatter(x=x_crank_init, y=y_crank_init, mode="lines+markers",line=dict(color='black')),
-            go.Scatter(x=x_init, y=y_init, mode="lines+markers",line=dict(color="#2606F9",width=5),marker=dict(size=10))
+            go.Scatter(x=x_init[:4], y=y_init[:4], mode="lines",line=dict(color=human_color),fill='toself',fillcolor=human_color),
+            go.Scatter(x=x_init[3:], y=y_init[3:], mode="lines",line=dict(color=human_color,width=5),marker=dict(size=10)),
+            go.Scatter(x=x_init[3:], y=y_init[3:], mode="markers",line=dict(color=joint_color,width=5),marker=dict(size=15))            
             ]
 
     fig = go.Figure(
@@ -194,29 +206,8 @@ def animation_native(cyclist:Human2D,current_time:float=0,show_angles:bool=False
                 "direction" :"left",
                 "x":0.5,"y":-0.1,
                 "bgcolor":"#F30B26",
-                "font":{"size":15},
-                "buttons": [
-                    {
-                        "label": "Play",
-                        "method": "animate",
-                        "args": [10*list(frames_dict.keys()), {
-                            "frame": {"duration": 50, "redraw": True},
-                            "fromcurrent": True,
-                            "transition": {"duration": 0},
-                            "loop": True
-                        }]
-                    },
-                    {
-                        "label": "Stop",
-                        "method": "animate",
-                        "args": [
-                                [None], 
-                                {
-                                    "frame": {"duration": 0, "redraw": True}, "mode": "immediate"
-                                }
-                            ]
-                    }
-                ]
+                "font":{"color":'black',"size":15},
+                "buttons": movie_buttons(frames_dict)
             }]
         ),
         frames=list(frames_dict.values())
@@ -232,7 +223,7 @@ def animation_native(cyclist:Human2D,current_time:float=0,show_angles:bool=False
                 #Add slider functionality
                 sliders=[{
                     "active": 0,
-                    "currentvalue": {"prefix": "Angle "},
+                    "currentvalue": {"prefix": "Pedal angle "},
                     "steps": slider_steps
                 }]
             ),
