@@ -10,7 +10,7 @@ from app.streamlit.animations import animation_native
 import plotly.graph_objects as go
 #lets try a 3 column structure
 st.set_page_config(layout="wide")
-st.markdown("<h1 style='text-align: center;'>Bikefit symulator</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center;'>Bikefit simulator</h1>", unsafe_allow_html=True)
 body_geo,animation,bike_geo=st.columns([0.2,0.6,0.2],border=True)
 
 
