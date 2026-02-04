@@ -38,7 +38,7 @@ def create_SVG_path(Lower_arm:NDArray, Apex:NDArray, Upper_arm:NDArray,flip:bool
         path += f'L {x_v},{y_v} '
     return path + 'Z',(diff*180/np.pi)
 
-def create_angle_areas(cyclist:Human2D,show_angles:bool,)->list[Any]:
+def create_angle_areas(cyclist:Human2D,show_angles:bool,layout_settings:AnimationSettings)->list[Any]:
     '''
     Creates coloured areas of join angles with
     color depending on the range of motion, if show_angles is False
@@ -49,10 +49,10 @@ def create_angle_areas(cyclist:Human2D,show_angles:bool,)->list[Any]:
         Helper function to highlight
         angle out of allowed range
         '''
-        if val <= range_list[1] and val >= range_list[0]:
-            return "Green"
+        if range_list[0] <= val <= range_list[1]:
+            return layout_settings.color_scheme['Angle_OK']
         else:
-            return "Red"
+            return layout_settings.color_scheme['Angle_NOTOK']
             
 
     knee_params=create_SVG_path(cyclist.ankle,cyclist.knee,cyclist.hip,cyclist.bike.side=='R')
@@ -133,6 +133,7 @@ def animation_native(cyclist:Human2D,layout_settings:AnimationSettings=Animation
     
     slider_steps=[]
     frames_dict={}
+    
     # Unpack the layout class
     number_of_frames=layout_settings.number_of_frames
     current_time=0
@@ -151,7 +152,7 @@ def animation_native(cyclist:Human2D,layout_settings:AnimationSettings=Animation
         x, y, x_crank,y_crank = cyclist.animation_step_plotly(t) #update moving parts location
 
         # Add angles (optional)
-        shapes_set=create_angle_areas(cyclist,show_angles) # retunrs tuple of angles and annotations
+        shapes_set=create_angle_areas(cyclist,show_angles,layout_settings) # retunrs tuple of angles and annotations
         shapes= shapes_set[0]
         annotations_list=create_annotations_list(shapes_set[1])
         

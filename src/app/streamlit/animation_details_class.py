@@ -3,7 +3,12 @@ class AnimationSettings:
         self._number_of_frames=number_of_frames
         self._show_angles=show_angles
         if not color_scheme:
-            self._color_scheme={'Human': '#ffda00',  'Joints': "#de58fb"}
+            self._color_scheme={
+                'Human': '#ffda00',
+                'Joints': "#de58fb",
+                'Angle_OK':'Green',
+                'Angle_NOTOK':'Red'
+                }
 
     @property
     def number_of_frames(self)->int:
