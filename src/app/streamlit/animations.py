@@ -133,11 +133,14 @@ def animation_native(cyclist:Human2D,layout_settings:AnimationSettings=Animation
     
     slider_steps=[]
     frames_dict={}
+    # Unpack the layout class
     number_of_frames=layout_settings.number_of_frames
     current_time=0
     show_angles=layout_settings.show_angles
     human_color=layout_settings.color_scheme['Human']
     joint_color=layout_settings.color_scheme['Joints']
+    ###
+
     for i in range(number_of_frames+1):
         '''
         Generate frames
@@ -197,7 +200,9 @@ def animation_native(cyclist:Human2D,layout_settings:AnimationSettings=Animation
             go.Scatter(x=x_init[3:], y=y_init[3:], mode="markers",line=dict(color=joint_color,width=5),marker=dict(size=15))            
             ]
 
-    fig = go.Figure(
+    col_with_movie,col_with_slider=st.columns([1,1])
+    with col_with_movie:
+        fig= go.Figure(
         data=init_frame_data,
         layout=go.Layout(
             **frame_layout_common,
@@ -212,10 +217,9 @@ def animation_native(cyclist:Human2D,layout_settings:AnimationSettings=Animation
         ),
         frames=list(frames_dict.values())
     )
-    col1,col2=st.columns([1,1])
-    with col1:
+
         st.plotly_chart(fig)
-    with col2: 
+    with col_with_slider: 
         fig_slider=go.Figure(
             data=init_frame_data, 
             layout=go.Layout(
